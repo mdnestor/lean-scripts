@@ -71,14 +71,69 @@ def Learner.braid {A B: Type}: Learner (A × B) (B × A) := {
     exact (a, b)
 }
 
-/- todo: equivalence of learners -/
-/- and proof of symmetric monoidal category https://leanprover-community.github.io/mathlib4_docs/Mathlib/CategoryTheory/Monoidal/Category.html -/
+/- Proposition 2.4 -/
 
-universe u
-def is_equiv (T: Type u) (R: T -> T -> Prop): Prop :=
-  (forall x: T, R x x) ∧
-  (forall x y: T, R x y ↔ R y x) ∧
-  (forall x y z: T, ((R x y) ∧ (R y z)) -> R x z)
+structure SymmMonCat where
+  obj: Type u
+  hom: obj -> obj -> Type v
+axiom Set: Type
+def Learn: SymmMonCat := {
+  obj := Type
+  hom := fun x y => Learner x y  
+}
+/- Definition 3.1 -/
 
-theorem Learner.equiv.is_equiv: forall A B: Type, is_equiv (Learner A B) Learner.equiv :=
-  sorry
+structure StrictSymmMonCat where
+
+axiom Para: StrictSymmMonCat
+
+/- Theorem 3.2 -/
+
+axiom R: Type
+
+structure StrongSymmetricMonoidalFunctor (X: StrictSymmMonCat) (Y: SymmMonCat) where
+
+def condition (f: Float -> Float -> Float): Prop := sorry
+
+def ParaToLearn (eps: Float) (e: Float -> Float -> Float) (h1: eps > 0) (h2: condition e): StrongSymmetricMonoidalFunctor Para Learn := sorry
+
+def faithful (F: StrongSymmetricMonoidalFunctor X Y): Prop := sorry
+
+def injective_on_objects (F: StrongSymmetricMonoidalFunctor X Y): Prop := sorry
+
+example (eps: Float) (e: Float -> Float -> Float) (h1: eps > 0) (h2: condition e): faithful (ParaToLearn eps e h1 h2) := sorry
+
+example (eps: Float) (e: Float -> Float -> Float) (h1: eps > 0) (h2: condition e): injective_on_objects (ParaToLearn eps e h1 h2) := sorry
+
+/- Definition 4.1 -/
+
+structure Category where
+  obj: Type
+  hom: obj -> obj -> Type
+
+structure NeuralNetwork (m n: Nat) where
+
+def NNet: Category := {
+  obj := Nat
+  hom := fun m n => NeuralNetwork m n
+}
+
+def differentiable (f: Float -> Float): Prop := sorry
+
+structure functor (C D: Category) where
+
+def Forget1 (C: StrictSymmMonCat): Category := sorry
+
+def implement (sigma: Float -> Float) (h: differentiable sigma): functor NNet (Forget1 Para) := sorry
+
+def Forget2 (C: SymmMonCat): Category := sorry
+
+def Forget3 (F: StrongSymmetricMonoidalFunctor X Y): functor (Forget1 X) (Forget2 Y) := sorry
+
+def compose (F: functor C1 C2) (G: functor C2 C3): functor C1 C3 := sorry
+
+example (eps: Float) (e: Float -> Float -> Float) (sigma: Float -> Float) (h1: eps > 0) (h2: condition e) (h3: differentiable sigma):
+  functor NNet (Forget2 Learn) :=
+  compose (implement sigma h3) (Forget3 (ParaToLearn eps e h1 h2))
+
+/- todo: proposition 5.1 -/
