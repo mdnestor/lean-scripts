@@ -1,5 +1,5 @@
-axiom Man: Type
-axiom is_mortal: Man -> Prop
-axiom all_men_are_mortal: forall x: Man, is_mortal x
-axiom socrates: Man
-theorem socrates_is_mortal: is_mortal socrates := by apply all_men_are_mortal
+axiom Human: Type
+axiom is_mortal: Human -> Prop
+axiom all_humans_are_mortal: forall h: Human, is_mortal h
+axiom socrates: Human
+theorem socrates_is_mortal: is_mortal socrates := by apply all_humans_are_mortal
