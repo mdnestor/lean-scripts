@@ -101,13 +101,15 @@ structure subtype {X: Type} (S: subset X) where
 
 def finite {X: Type} (S: subset X): Prop := sorry
 
-def restrict_to_subtype {X Y: Type} (f: X -> Y) (S: subset X): subtype S -> Y := fun x => f x.x
+def restrict_to_subtype {X Y: Type} (f: X -> Y) (S: subset X): (subtype S) -> Y := fun x => f x.x
 
 def lmul {A: Type} {G: Group2} (g0: G.T) (x: G.T -> A): G.T -> A := fun g => x (G.op (G.inv g0) g)
 
 /- some sort of composition -/
 
 def cellular_automaton {A: Type} {G: Group2} (F: (G.T -> A) -> (G.T -> A)): Prop := exists S: subset G.T, finite S ∧ exists mu: (subtype S -> A) -> A, forall x: G.T -> A, forall g: G.T, (F x) g = mu (restrict_to_subtype x S)
+
+def cellular_automaton2 {A: Type} {G: Group2} (F: (G.T -> A) -> (G.T -> A)) (S: subset G.T) (mu: ((subtype S) -> A) -> A): Prop := finite S ∧ forall x: G.T -> A, forall g: G.T, (F x) g = mu (restrict_to_subtype x S)
 
 /-  we need the prodiscrete topology -/
 
@@ -135,5 +137,37 @@ def equivariant2 {A: Type} {G: Group2} (tau: (G.T -> A) -> (G.T -> A)): Prop := 
 
 def finiteType (X: Type): Prop := sorry
 
+theorem Prop_1_4_4 (A: Type) (G: Group2) (tau: (G.T -> A) -> (G.T -> A)): cellular_automaton tau -> equivariant2 tau := by
+  intro h
+  rw [equivariant2]
+  intro x g
+  funext g'
+  sorry
+
+theorem Prop_1_4_6 (A: Type) (G: Group2) (tau: (G.T -> A) -> (G.T -> A)) (S: subset G.T) (h: finite S) (mu: (subtype S -> A) -> A):
+  (cellular_automaton2 tau S mu) ↔ (equivariant2 tau ∧ forall x: G.T -> A, (tau x) G.id = mu (restrict_to_subtype x S)) :=
+  sorry
+
+theorem Prop_1_4_8 (A: Type) (G: Group2) (tau: (G.T -> A) -> (G.T -> A)): cellular_automaton tau -> is_prodiscrete_continuous tau := sorry
+
+def V {A: Type} {G: Group2} (x: G.T -> A) (S: subset G.T): subset (G.T -> A) :=
+  fun y => forall g: G.T, S g -> x g = y g
+
+theorem lemma1 (A: Type) (G: Group2) (tau: (G.T -> A) -> (G.T -> A)) (h: is_prodiscrete_continuous tau):
+  forall x: G.T -> A, exists Omega_x: subset G.T, finite Omega_x ∧ forall y: G.T -> A, (V x Omega_x) y -> (tau x) G.id = (tau y) G.id :=
+  sorry
+
+/- next show the V form an open cover -/
+
 theorem CurtisHedlundLyndon (A: Type) (G: Group2) (h: finiteType A) (tau: (G.T -> A) -> (G.T -> A)):
-  (cellular_automaton tau) ↔ (is_prodiscrete_continuous tau) ∧ (equivariant2 tau) := sorry
+  (cellular_automaton tau) ↔ (equivariant2 tau) ∧ (is_prodiscrete_continuous tau) := by
+  apply Iff.intro
+  intro h1
+  apply And.intro
+  apply Prop_1_4_4
+  exact h1
+  apply Prop_1_4_8
+  exact h1
+  intro h1
+  rw [cellular_automaton]
+  sorry
