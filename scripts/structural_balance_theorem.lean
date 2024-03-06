@@ -37,18 +37,33 @@ structure Graph where
   edge: node → node → Bool
   symmetric: ∀ x y: node, edge x y ↔ edge y x
 
+def three_complete {G: Graph} (x y z: G.node): Prop :=
+  G.edge x y ∧ G.edge y z ∧ G.edge x z
+
+def two_connected {G: Graph} (x y z: G.node): Prop :=
+  (  G.edge x y ∧ ¬ G.edge y z ∧ ¬ G.edge x z) ∨ /- x y alliance excluding z -/
+  (¬ G.edge x y ∧   G.edge y z ∧ ¬ G.edge x z) ∨ /- y z alliance excluding x -/
+  (¬ G.edge x y ∧ ¬ G.edge y z ∧   G.edge x z)   /- x z alliance excluding y -/
+
 def locally_balanced {G: Graph} (x y z: G.node): Prop :=
-  (G.edge x y ∧   G.edge y z ∧   G.edge x z) ∨ /- all friends -/
-  (G.edge x y ∧ ¬ G.edge y z ∧ ¬ G.edge x z) /- x y alliance excluding z -/
+  three_complete x y z ∨ two_connected x y z
 
 def balanced (G: Graph): Prop := ∀ x y z: G.node, locally_balanced x y z
 
 def bipartite_complete (G: Graph): Prop :=
   ∃ f: G.node → Bool, ∀ x y: G.node, G.edge x y ↔ f x = f y
 
+def func {G: Graph} (h: bipartite_complete G): G.node → Bool :=
+  sorry
+
+theorem func_fact2 {h: bipartite_complete G} {x y: G.node} (h1: (func h) x = (func h) y): G.edge x y = true := sorry
+
+theorem func_fact3 {h: bipartite_complete G} {x y: G.node} (h1: (func h) x ≠ (func h) y): G.edge x y = false := sorry
+
 theorem lemma1 (G: Graph) (x y z: G.node) (h: balanced G): (G.edge x y) ∧ (G.edge x z) -> G.edge y z := sorry
 
 theorem lemma2 (G: Graph) (x y z: G.node) (h: balanced G): (¬ G.edge x y) ∧ (¬ G.edge x z) -> G.edge y z := sorry
+
 
 theorem BalancedImpliesBipartiteComplete (G: Graph): balanced G → bipartite_complete G := by
   intro h
@@ -81,30 +96,91 @@ theorem BipartiteCompleteImpliesBalanced (G: Graph): bipartite_complete G → ba
   rw [balanced]
   intro x y z
   rw [locally_balanced]
-  match G.edge x y with
-  | true => {
-    match G.edge x z with
-    | true => {
-      simp
-      /- this should imply y ∼ z -/
-      sorry
-    }
-    | false => {
-      simp
-      sorry
-    }
-  }
-  | false => {
-    match G.edge x z with
-    | true => {
-      simp
-      sorry
-    }
-    | false => {
-      simp
-      sorry
-    }
-  }
+  by_cases h1: (func h) x
+  by_cases h2: (func h) y
+  by_cases h3: (func h) z
+  apply Or.inl
+  rw [three_complete]
+  apply And.intro
+  have h4: (func h) x = (func h) y := by rw [h1, h2]
+  apply func_fact2 h4
+  apply And.intro
+  have h4: (func h) y = (func h) z := by rw [h2, h3]
+  apply func_fact2 h4
+  have h4: (func h) x = (func h) z := by rw [h1, h3]
+  apply func_fact2 h4
+  apply Or.inr
+  rw [two_connected]
+  simp
+  apply Or.inl
+  apply And.intro
+  have h4: (func h) x = (func h) y := by rw [h1, h2]
+  apply func_fact2 h4
+  apply And.intro
+  have h4: (func h) y ≠ (func h) z := sorry
+  apply func_fact3 h4
+  have h4: (func h) x ≠ (func h) z := sorry
+  apply func_fact3 h4
+  apply Or.inr
+  rw [two_connected]
+  simp
+  apply Or.inr
+  by_cases h3: func h z
+  apply Or.inr
+  sorry
+  apply Or.inl
+  sorry
+  by_cases h2: (func h) y
+  by_cases h3: (func h) z
+  apply Or.inr
+  rw [two_connected]
+  apply Or.inr
+  simp
+  apply Or.inl
+  apply And.intro
+  have h4: (func h) x ≠ (func h) y := sorry
+  apply func_fact3 h4
+  apply And.intro
+  have h4: (func h) y = (func h) z := by rw [h2, h3]
+  apply func_fact2 h4
+  have h4: (func h) x ≠ (func h) z := sorry
+  apply func_fact3 h4
+  apply Or.inr
+  rw [two_connected]
+  simp
+  apply Or.inr
+  apply Or.inr
+  apply And.intro
+  have h4: (func h) x ≠ (func h) y := sorry
+  apply func_fact3 h4
+  apply And.intro
+  have h4: (func h) y ≠ (func h) z := sorry
+  apply func_fact3 h4
+  have h4: (func h) x = (func h) z := sorry
+  apply func_fact2 h4
+  by_cases h3: func h z
+  apply Or.inr
+  rw [two_connected]
+  simp
+  apply Or.inl
+  apply And.intro
+  have h4: (func h) x = (func h) y := sorry
+  apply func_fact2 h4
+  apply And.intro
+  have h4: (func h) y ≠ (func h) z := sorry
+  apply func_fact3 h4
+  have h4: (func h) x ≠ (func h) z := sorry
+  apply func_fact3 h4
+  apply Or.inl
+  rw [three_complete]
+  apply And.intro
+  have h4: (func h) x = (func h) y := sorry
+  apply func_fact2 h4
+  apply And.intro
+  have h4: (func h) y = (func h) z := sorry
+  apply func_fact2 h4
+  have h4: (func h) x = (func h) z := sorry
+  apply func_fact2 h4
 
 theorem BalanceTheorem (G: Graph): balanced G ↔ bipartite_complete G := by
   apply Iff.intro
