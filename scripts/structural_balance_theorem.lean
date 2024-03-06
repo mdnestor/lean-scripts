@@ -128,9 +128,23 @@ theorem BipartiteCompleteImpliesBalanced (G: Graph): bipartite_complete G → ba
   apply Or.inr
   by_cases h3: func h z
   apply Or.inr
-  sorry
+  apply And.intro
+  have h4: (func h) x ≠ (func h) y := sorry
+  apply lemma4 h4
+  apply And.intro
+  have h4: (func h) y ≠ (func h) z := sorry
+  apply lemma4 h4
+  have h4: (func h) x = (func h) z := sorry
+  apply lemma3 h4
   apply Or.inl
-  sorry
+  apply And.intro
+  have h4: (func h) x ≠ (func h) y := sorry
+  apply lemma4 h4
+  apply And.intro
+  have h4: (func h) y = (func h) z := sorry
+  apply lemma3 h4
+  have h4: (func h) x ≠ (func h) z := sorry
+  apply lemma4 h4
   by_cases h2: (func h) y
   by_cases h3: (func h) z
   apply Or.inr
