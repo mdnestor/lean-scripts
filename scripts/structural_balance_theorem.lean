@@ -48,7 +48,8 @@ def two_connected {G: Graph} (x y z: G.node): Prop :=
 def locally_balanced {G: Graph} (x y z: G.node): Prop :=
   three_complete x y z ∨ two_connected x y z
 
-def balanced (G: Graph): Prop := ∀ x y z: G.node, locally_balanced x y z
+def balanced (G: Graph): Prop :=
+  ∀ x y z: G.node, locally_balanced x y z
 
 def bipartite_complete (G: Graph): Prop :=
   ∃ f: G.node → Bool, ∀ x y: G.node, G.edge x y ↔ f x = f y
@@ -56,40 +57,40 @@ def bipartite_complete (G: Graph): Prop :=
 def func {G: Graph} (h: bipartite_complete G): G.node → Bool :=
   sorry
 
-theorem func_fact2 {h: bipartite_complete G} {x y: G.node} (h1: (func h) x = (func h) y): G.edge x y = true := sorry
+theorem lemma1 {G: Graph} {x y z: G.node} (h: balanced G) (h1: G.edge x y) (h2: G.edge y z): G.edge x z := by
+  sorry
 
-theorem func_fact3 {h: bipartite_complete G} {x y: G.node} (h1: (func h) x ≠ (func h) y): G.edge x y = false := sorry
-
-theorem lemma1 (G: Graph) (x y z: G.node) (h: balanced G): (G.edge x y) ∧ (G.edge x z) -> G.edge y z := sorry
-
-theorem lemma2 (G: Graph) (x y z: G.node) (h: balanced G): (¬ G.edge x y) ∧ (¬ G.edge x z) -> G.edge y z := sorry
-
+theorem lemma2 {G: Graph} {x y z: G.node} (h: balanced G) (h1: ¬ G.edge x y) (h2: G.edge y z): ¬ G.edge x z := by
+  sorry
 
 theorem BalancedImpliesBipartiteComplete (G: Graph): balanced G → bipartite_complete G := by
   intro h
   rw [bipartite_complete]
-  have x0: G.node := sorry
-  have f: G.node → Bool := fun x => G.edge x x0
+  have x: G.node := sorry
+  have f: G.node → Bool := sorry
+  have hf: ∀ x': G.node, f x = f x' ↔ G.edge x x' := sorry
   exists f
-  intro x y
+  intro y z
   apply Iff.intro
   intro h1
-  match f x with
-  | true => {
-    have h2: f y = true := sorry
-    rw [h2]
-  }
-  | false => {
-    have h2: f y = false := sorry
-    rw [h2]
-  }
+  by_cases h2: f y
+  /- assuming f y = true means x ~ y -/
+  /- h1 also gives x ! z -/
+  have h3: G.edge x y := sorry
+  have h4: G.edge x z := by exact lemma1 h h3 h1
+  sorry /- direct application of hf-/
+  /- assuming f y = false means x ≁ y -/
+  have h3: ¬ G.edge x y := sorry
+  have h4: ¬ G.edge x z := by exact lemma2 h h3 h1
+  sorry /- direct application of hf-/
   intro h1
-  match f x with
-  | true => {
-    have h2: f y = true := sorry
-    sorry
-  }
-  | false => sorry
+  sorry /- direct application of hf-/
+
+theorem lemma3 {h: bipartite_complete G} {x y: G.node} (h1: (func h) x = (func h) y): G.edge x y = true := by
+  sorry
+
+theorem lemma4 {h: bipartite_complete G} {x y: G.node} (h1: (func h) x ≠ (func h) y): G.edge x y = false := by
+  sorry
 
 theorem BipartiteCompleteImpliesBalanced (G: Graph): bipartite_complete G → balanced G := by
   intro h
@@ -103,24 +104,24 @@ theorem BipartiteCompleteImpliesBalanced (G: Graph): bipartite_complete G → ba
   rw [three_complete]
   apply And.intro
   have h4: (func h) x = (func h) y := by rw [h1, h2]
-  apply func_fact2 h4
+  apply lemma3 h4
   apply And.intro
   have h4: (func h) y = (func h) z := by rw [h2, h3]
-  apply func_fact2 h4
+  apply lemma3 h4
   have h4: (func h) x = (func h) z := by rw [h1, h3]
-  apply func_fact2 h4
+  apply lemma3 h4
   apply Or.inr
   rw [two_connected]
   simp
   apply Or.inl
   apply And.intro
   have h4: (func h) x = (func h) y := by rw [h1, h2]
-  apply func_fact2 h4
+  apply lemma3 h4
   apply And.intro
   have h4: (func h) y ≠ (func h) z := sorry
-  apply func_fact3 h4
+  apply lemma4 h4
   have h4: (func h) x ≠ (func h) z := sorry
-  apply func_fact3 h4
+  apply lemma4 h4
   apply Or.inr
   rw [two_connected]
   simp
@@ -139,12 +140,12 @@ theorem BipartiteCompleteImpliesBalanced (G: Graph): bipartite_complete G → ba
   apply Or.inl
   apply And.intro
   have h4: (func h) x ≠ (func h) y := sorry
-  apply func_fact3 h4
+  apply lemma4 h4
   apply And.intro
   have h4: (func h) y = (func h) z := by rw [h2, h3]
-  apply func_fact2 h4
+  apply lemma3 h4
   have h4: (func h) x ≠ (func h) z := sorry
-  apply func_fact3 h4
+  apply lemma4 h4
   apply Or.inr
   rw [two_connected]
   simp
@@ -152,12 +153,12 @@ theorem BipartiteCompleteImpliesBalanced (G: Graph): bipartite_complete G → ba
   apply Or.inr
   apply And.intro
   have h4: (func h) x ≠ (func h) y := sorry
-  apply func_fact3 h4
+  apply lemma4 h4
   apply And.intro
   have h4: (func h) y ≠ (func h) z := sorry
-  apply func_fact3 h4
+  apply lemma4 h4
   have h4: (func h) x = (func h) z := sorry
-  apply func_fact2 h4
+  apply lemma3 h4
   by_cases h3: func h z
   apply Or.inr
   rw [two_connected]
@@ -165,22 +166,22 @@ theorem BipartiteCompleteImpliesBalanced (G: Graph): bipartite_complete G → ba
   apply Or.inl
   apply And.intro
   have h4: (func h) x = (func h) y := sorry
-  apply func_fact2 h4
+  apply lemma3 h4
   apply And.intro
   have h4: (func h) y ≠ (func h) z := sorry
-  apply func_fact3 h4
+  apply lemma4 h4
   have h4: (func h) x ≠ (func h) z := sorry
-  apply func_fact3 h4
+  apply lemma4 h4
   apply Or.inl
   rw [three_complete]
   apply And.intro
   have h4: (func h) x = (func h) y := sorry
-  apply func_fact2 h4
+  apply lemma3 h4
   apply And.intro
   have h4: (func h) y = (func h) z := sorry
-  apply func_fact2 h4
+  apply lemma3 h4
   have h4: (func h) x = (func h) z := sorry
-  apply func_fact2 h4
+  apply lemma3 h4
 
 theorem BalanceTheorem (G: Graph): balanced G ↔ bipartite_complete G := by
   apply Iff.intro
