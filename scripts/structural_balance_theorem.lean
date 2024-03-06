@@ -54,8 +54,8 @@ def balanced (G: Graph): Prop :=
 def bipartite_complete (G: Graph): Prop :=
   ∃ f: G.node → Bool, ∀ x y: G.node, G.edge x y ↔ f x = f y
 
-def func {G: Graph} (h: bipartite_complete G): G.node → Bool :=
-  sorry
+
+def func {G: Graph} (h: bipartite_complete G): G.node → Bool := sorry
 
 theorem lemma1 {G: Graph} {x y z: G.node} (h: balanced G) (h1: G.edge x y) (h2: G.edge y z): G.edge x z := by
   sorry
@@ -86,116 +86,61 @@ theorem BalancedImpliesBipartiteComplete (G: Graph): balanced G → bipartite_co
   intro h1
   sorry /- direct application of hf-/
 
-theorem lemma3 {h: bipartite_complete G} {x y: G.node} (h1: (func h) x = (func h) y): G.edge x y = true := by
-  sorry
+theorem lemma3 {a: Bool} (h: ¬a = true): ¬true = a := sorry
 
-theorem lemma4 {h: bipartite_complete G} {x y: G.node} (h1: (func h) x ≠ (func h) y): G.edge x y = false := by
-  sorry
+theorem lemma4 {a: Bool} (h: ¬a = true): a = false := sorry
+
+theorem lemma5 {a: Bool} (h1: ¬a = true) (h2: ¬b = true): a = b := sorry
 
 theorem BipartiteCompleteImpliesBalanced (G: Graph): bipartite_complete G → balanced G := by
   intro h
   rw [balanced]
   intro x y z
   rw [locally_balanced]
-  by_cases h1: (func h) x
-  by_cases h2: (func h) y
-  by_cases h3: (func h) z
-  apply Or.inl
-  rw [three_complete]
-  apply And.intro
-  have h4: (func h) x = (func h) y := by rw [h1, h2]
-  apply lemma3 h4
-  apply And.intro
-  have h4: (func h) y = (func h) z := by rw [h2, h3]
-  apply lemma3 h4
-  have h4: (func h) x = (func h) z := by rw [h1, h3]
-  apply lemma3 h4
-  apply Or.inr
-  rw [two_connected]
-  simp
-  apply Or.inl
-  apply And.intro
-  have h4: (func h) x = (func h) y := by rw [h1, h2]
-  apply lemma3 h4
-  apply And.intro
-  have h4: (func h) y ≠ (func h) z := sorry
-  apply lemma4 h4
-  have h4: (func h) x ≠ (func h) z := sorry
-  apply lemma4 h4
-  apply Or.inr
-  rw [two_connected]
-  simp
-  apply Or.inr
-  by_cases h3: func h z
-  apply Or.inr
-  apply And.intro
-  have h4: (func h) x ≠ (func h) y := sorry
-  apply lemma4 h4
-  apply And.intro
-  have h4: (func h) y ≠ (func h) z := sorry
-  apply lemma4 h4
-  have h4: (func h) x = (func h) z := sorry
-  apply lemma3 h4
-  apply Or.inl
-  apply And.intro
-  have h4: (func h) x ≠ (func h) y := sorry
-  apply lemma4 h4
-  apply And.intro
-  have h4: (func h) y = (func h) z := sorry
-  apply lemma3 h4
-  have h4: (func h) x ≠ (func h) z := sorry
-  apply lemma4 h4
-  by_cases h2: (func h) y
-  by_cases h3: (func h) z
-  apply Or.inr
-  rw [two_connected]
-  apply Or.inr
-  simp
-  apply Or.inl
-  apply And.intro
-  have h4: (func h) x ≠ (func h) y := sorry
-  apply lemma4 h4
-  apply And.intro
-  have h4: (func h) y = (func h) z := by rw [h2, h3]
-  apply lemma3 h4
-  have h4: (func h) x ≠ (func h) z := sorry
-  apply lemma4 h4
-  apply Or.inr
-  rw [two_connected]
-  simp
-  apply Or.inr
-  apply Or.inr
-  apply And.intro
-  have h4: (func h) x ≠ (func h) y := sorry
-  apply lemma4 h4
-  apply And.intro
-  have h4: (func h) y ≠ (func h) z := sorry
-  apply lemma4 h4
-  have h4: (func h) x = (func h) z := sorry
-  apply lemma3 h4
-  by_cases h3: func h z
-  apply Or.inr
-  rw [two_connected]
-  simp
-  apply Or.inl
-  apply And.intro
-  have h4: (func h) x = (func h) y := sorry
-  apply lemma3 h4
-  apply And.intro
-  have h4: (func h) y ≠ (func h) z := sorry
-  apply lemma4 h4
-  have h4: (func h) x ≠ (func h) z := sorry
-  apply lemma4 h4
-  apply Or.inl
-  rw [three_complete]
-  apply And.intro
-  have h4: (func h) x = (func h) y := sorry
-  apply lemma3 h4
-  apply And.intro
-  have h4: (func h) y = (func h) z := sorry
-  apply lemma3 h4
-  have h4: (func h) x = (func h) z := sorry
-  apply lemma3 h4
+  cases h with
+  | intro f hf => {
+    by_cases hx: f x
+    by_cases hy: f y
+    by_cases hz: f z
+    apply Or.inl
+    rw [three_complete, hf, hf, hf, hx, hy, hz]
+    simp
+    apply Or.inr
+    rw [two_connected, hf, hf, hf, hx, hy]
+    simp
+    exact lemma3 hz
+    by_cases hz: f z
+    apply Or.inr
+    rw [two_connected, hf, hf, hf, hx, hz]
+    simp
+    exact ⟨lemma3 hy, lemma4 hy⟩
+    apply Or.inr
+    rw [two_connected, hf, hf, hf, hx]
+    apply Or.inr
+    apply Or.inl
+    exact ⟨lemma3 hy, lemma5 hy hz, lemma3 hz⟩
+    by_cases hy: f y
+    by_cases hz: f z
+    apply Or.inr
+    rw [two_connected, hf, hf, hf, hy, hz]
+    simp
+    exact lemma4 hx
+    apply Or.inr
+    rw [two_connected, hf, hf, hf, hy]
+    simp
+    apply Or.inr
+    apply Or.inr
+    exact ⟨lemma4 hx, lemma3 hz, lemma5 hx hz⟩
+    by_cases hz: f z
+    apply Or.inr
+    rw [two_connected, hf, hf, hf, hz]
+    simp
+    apply Or.inl
+    exact ⟨lemma5 hx hy, lemma4 hy, lemma4 hx⟩
+    apply Or.inl
+    rw [three_complete, hf, hf, hf]
+    exact ⟨lemma5 hx hy, lemma5 hy hz, lemma5 hx hz⟩
+  }
 
 theorem BalanceTheorem (G: Graph): balanced G ↔ bipartite_complete G := by
   apply Iff.intro
