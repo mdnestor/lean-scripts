@@ -6,19 +6,23 @@ Note that for every 3 nodes x, y, z, there can be either 0, 1, 2, or 3 edges bet
 Call x, y, z "locally balanced" if the total number of edges between them is either 1 or 3.
 Define G to be (globally) balanced if every 3 nodes are locally balanced. 
 Define G to be bipartite complete if it can be partitioned into two complete subgraphs which share no edges.
-The balance theorem says that G is balanced iff. it is bipartite complete.
+Equivalently, G is bipartite complete if there exists a function f: G → Bool such that x ∼ y iff. f(x) = f(y). 
 
-Proof: First, assume G is bipartite complete. We want to show G is globally balanaced.
+Balance theorem: G is balanced ↔ G is bipartite complete.
+
+Proof: First, assume G is bipartite complete.
+We want to show G is balanced.
 Let x, y, and z be any 3 nodes, and it suffices to show x, y, z are locally balanced.
 Case 1. x ~ y and x ~ z. Then bipartite complete implies y ~ z implies locally balanced.
 Case 2. x ~ y and x ≁ z. Then bipartite complete implies y ≁ z implies locally balanced.
 Case 3. x ≁ y and x ~ z. Then bipartite complete implies y ≁ z implies locally balanced.
 Case 4. x ≁ y and x ≁ z. Then bipartite complete implies y ~ z implies locally balanced.
-In each case x, y, z are locally balanced, so G is globally balanced.
+In each case x, y, z are locally balanced, so G is balanced.
 
-Next, assume G is globally balanced.
-To show G is bipartite complete, let x be an arbitrary node, let A be the set of neighbors of x and let B = G \ A.
-We will now show G is bipartite complete by showing the following hold:
+Next, assume G is balanced.
+We want to show G is bipartite complete.
+Let x be an arbitrary node, let A be the set of neighbors of x and let B = G - A.
+We will show G is bipartite complete by showing the following hold:
 Case 1. y ∈ A and z ∈ A implies (x ∼ y) ∧ (x ∼ z) implies (y ∼ z). 
 Case 2. y ∈ A and z ∈ B implies (x ∼ y) ∧ (x ≁ z) implies (y ≁ z).
 Case 3. y ∈ B and z ∈ B implies (x ≁ y) ∧ (x ≁ z) implies (y ∼ z).
@@ -54,43 +58,17 @@ def balanced (G: Graph): Prop :=
 def bipartite_complete (G: Graph): Prop :=
   ∃ f: G.node → Bool, ∀ x y: G.node, G.edge x y ↔ f x = f y
 
+theorem lemma1 {a: Bool} (h: ¬a = true): ¬true = a :=
+  fun ha => h ha.symm
 
-def func {G: Graph} (h: bipartite_complete G): G.node → Bool := sorry
+theorem lemma2 {a: Bool} (h: ¬a = true): a = false :=
+  match a, h with
+  | true, h => False.elim (h rfl)
+  | false, _ => rfl
 
-theorem lemma1 {G: Graph} {x y z: G.node} (h: balanced G) (h1: G.edge x y) (h2: G.edge y z): G.edge x z := by
-  sorry
-
-theorem lemma2 {G: Graph} {x y z: G.node} (h: balanced G) (h1: ¬ G.edge x y) (h2: G.edge y z): ¬ G.edge x z := by
-  sorry
-
-theorem BalancedImpliesBipartiteComplete (G: Graph): balanced G → bipartite_complete G := by
-  intro h
-  rw [bipartite_complete]
-  have x: G.node := sorry
-  have f: G.node → Bool := sorry
-  have hf: ∀ x': G.node, f x = f x' ↔ G.edge x x' := sorry
-  exists f
-  intro y z
-  apply Iff.intro
-  intro h1
-  by_cases h2: f y
-  /- assuming f y = true means x ~ y -/
-  /- h1 also gives x ! z -/
-  have h3: G.edge x y := sorry
-  have h4: G.edge x z := by exact lemma1 h h3 h1
-  sorry /- direct application of hf-/
-  /- assuming f y = false means x ≁ y -/
-  have h3: ¬ G.edge x y := sorry
-  have h4: ¬ G.edge x z := by exact lemma2 h h3 h1
-  sorry /- direct application of hf-/
-  intro h1
-  sorry /- direct application of hf-/
-
-theorem lemma3 {a: Bool} (h: ¬a = true): ¬true = a := sorry
-
-theorem lemma4 {a: Bool} (h: ¬a = true): a = false := sorry
-
-theorem lemma5 {a: Bool} (h1: ¬a = true) (h2: ¬b = true): a = b := sorry
+theorem lemma3 {a b: Bool} (h1: ¬a = true) (h2: ¬b = true): a = b :=
+  match a, b, lemma2 h1, lemma2 h2 with
+  | _, _, rfl, rfl => rfl
 
 theorem BipartiteCompleteImpliesBalanced (G: Graph): bipartite_complete G → balanced G := by
   intro h
@@ -108,39 +86,57 @@ theorem BipartiteCompleteImpliesBalanced (G: Graph): bipartite_complete G → ba
     apply Or.inr
     rw [two_connected, hf, hf, hf, hx, hy]
     simp
-    exact lemma3 hz
+    exact lemma1 hz
     by_cases hz: f z
     apply Or.inr
     rw [two_connected, hf, hf, hf, hx, hz]
     simp
-    exact ⟨lemma3 hy, lemma4 hy⟩
+    exact ⟨lemma1 hy, lemma2 hy⟩
     apply Or.inr
     rw [two_connected, hf, hf, hf, hx]
     apply Or.inr
     apply Or.inl
-    exact ⟨lemma3 hy, lemma5 hy hz, lemma3 hz⟩
+    exact ⟨lemma1 hy, lemma3 hy hz, lemma1 hz⟩
     by_cases hy: f y
     by_cases hz: f z
     apply Or.inr
     rw [two_connected, hf, hf, hf, hy, hz]
     simp
-    exact lemma4 hx
+    exact lemma2 hx
     apply Or.inr
     rw [two_connected, hf, hf, hf, hy]
     simp
     apply Or.inr
     apply Or.inr
-    exact ⟨lemma4 hx, lemma3 hz, lemma5 hx hz⟩
+    exact ⟨lemma2 hx, lemma1 hz, lemma3 hx hz⟩
     by_cases hz: f z
     apply Or.inr
     rw [two_connected, hf, hf, hf, hz]
     simp
     apply Or.inl
-    exact ⟨lemma5 hx hy, lemma4 hy, lemma4 hx⟩
+    exact ⟨lemma3 hx hy, lemma2 hy, lemma2 hx⟩
     apply Or.inl
     rw [three_complete, hf, hf, hf]
-    exact ⟨lemma5 hx hy, lemma5 hy hz, lemma5 hx hz⟩
+    exact ⟨lemma3 hx hy, lemma3 hy hz, lemma3 hx hz⟩
   }
+
+theorem BalancedImpliesBipartiteComplete (G: Graph): balanced G → bipartite_complete G := by
+  intro h
+  rw [bipartite_complete]
+  have x: G.node := sorry
+  have f: G.node → Bool := fun x' => G.edge x x'
+  have hf (x': G.node): f x = f x' ↔ G.edge x x' := sorry
+  exists f
+  intro y z
+  have hb: locally_balanced x y z := by apply h
+  apply Iff.intro
+  intro hyz
+  by_cases hy: f y
+  rw [hy]
+  sorry
+  sorry
+  intro hyz
+  sorry
 
 theorem BalanceTheorem (G: Graph): balanced G ↔ bipartite_complete G := by
   apply Iff.intro
