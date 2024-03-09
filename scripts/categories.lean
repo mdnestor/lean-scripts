@@ -104,7 +104,7 @@ example: CATEGORY := {
   comp := fun f g x => g (f x)
   id_left := by simp
   id_right := by simp
-  assoc := by simp
+  assoc := by simp /- must be easy to reason about yourself -/
 }
 
 def CATEGORY.toCategory (C: CATEGORY): Category := {obj := C.obj, hom := C.hom, id := C.id, comp := C.comp, id_left := C.id_left, id_right := C.id_right, assoc := C.assoc}
