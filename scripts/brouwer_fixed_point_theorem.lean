@@ -5,7 +5,6 @@ axiom nSphere (n: Nat): TopSpace
 structure Continuous (X Y: TopSpace) where
   map: X.point → Y.point
 axiom has_fixed_point {X: TopSpace} (f: Continuous X X): Prop
-def Brouwers_claim (n: Nat) (f: Continuous (nBall (n+1)) (nBall (n+1))): Prop := has_fixed_point f
 axiom Group: Type
 structure Homomorphism (X Y: Group)
 axiom injective {X Y: Group} (f: Homomorphism X Y): Prop
@@ -20,6 +19,7 @@ axiom sphere_homology (n: Nat): homology0 (nSphere n) n = Z
 
 axiom retraction {X Y: TopSpace} (f: Continuous X Y): Prop
 axiom homology_fact {X Y: TopSpace} (f: Continuous X Y) (h: retraction f) (n: Nat): injective (homology1 f n)
+
 /- this is the retraction from the ball to its boundary -/
 axiom R {n: Nat} (f: Continuous (nBall (n+1)) (nBall (n+1))) (h: ¬ has_fixed_point f): Continuous (nBall (n+1)) (nSphere n)
 axiom R_is_retraction {n: Nat} (f: Continuous (nBall (n+1)) (nBall (n+1))) (h: ¬ has_fixed_point f): retraction (R f h)
