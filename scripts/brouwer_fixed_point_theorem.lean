@@ -1,3 +1,13 @@
+/-
+Brouwer fixed point theorem: any continuous map from the closed ball to itself must have a fixed point.
+https://en.wikipedia.org/wiki/Brouwer_fixed-point_theorem
+https://www.youtube.com/watch?v=djaSbHKK5yc
+
+This uses the algebraic topology proof: if there exists a map D^n \to D^n without a fixed point, then there is a retraction of D^n onto S^(n-1).
+When you take the image under the n-th homology functor, this retraction becomes an injective homomorphism from Z to 0.
+But this is a contradiction, so f must have a fixed point.
+-/
+
 structure TopSpace where
   point: Type
 axiom nBall (n: Nat): TopSpace
