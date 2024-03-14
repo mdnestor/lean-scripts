@@ -2,7 +2,7 @@
 "Diagonal arguments and cartesian closed categories" by Lawvere (1969).
 http://tac.mta.ca/tac/reprints/articles/15/tr15.pdf
 A simple version where we identify A^B with A → B.
-Basically a generalized Cantor's theorem but for Lean types instead of sets.
+Basically a generalized Cantor's theorem for types.
 -/
 
 def weakly_point_surjective (g: X → A → Y): Prop :=
