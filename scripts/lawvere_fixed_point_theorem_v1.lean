@@ -1,17 +1,22 @@
+/-
+"Diagonal arguments and cartesian closed categories" by Lawvere (1969).
+http://tac.mta.ca/tac/reprints/articles/15/tr15.pdf
+A simple version where we identify A^B with A → B.
+Basically a generalized Cantor's theorem but for Lean types instead of sets.
+-/
 
-/- lawvere's fixed point: Lean version -/
-/- this is probably too trivial... -/
+def weakly_point_surjective (g: X → A → Y): Prop :=
+  ∀ f: A → Y, ∃ x: X, ∀ a: A, (g x) a = f a
 
-def point_surjective (f: A -> B): Prop :=
-  forall b: Unit -> B, exists a: Unit -> A, f ∘ a = b
+def fixed_point_property (Y: Type): Prop :=
+  ∀ t: Y → Y, ∃ y: Y, t y = y
 
-def weakly_point_surjective (f: A -> B -> C): Prop :=
-  forall g: B -> C, exists a: A, forall b: B, (f a) b = g b
-
-def fixed_point_property (A: Type): Prop :=
-  forall f: A -> A, exists a: Unit -> A, f ∘ a = a
-
-theorem lawvere (Y: Type):
-  (exists A: Type, exists g: A -> A -> Y,
-  weakly_point_surjective g) -> fixed_point_property Y :=
-  sorry
+theorem Lawvere: ∀ Y: Type, (∃ A: Type, ∃ g: A → A → Y, weakly_point_surjective g) → fixed_point_property Y := by
+  intro Y h1
+  rw [fixed_point_property]
+  intro t
+  obtain ⟨A, g, h2⟩ := h1
+  obtain ⟨f, h3⟩: ∃ f: A → Y, ∀ a: A, f a = t (g a a) := ⟨fun a => t (g a a), by simp⟩
+  obtain ⟨x, h4⟩ := h2 f
+  exists g x x
+  rw [←h3, h4]
