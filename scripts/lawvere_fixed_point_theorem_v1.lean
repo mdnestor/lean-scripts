@@ -77,3 +77,38 @@ theorem LawvereProof2: ∀ Y: Type, (∃ g: A → A → Y, weakly_point_surjecti
   have h3: represents_some g := (wps_implies_rs g) h2
   apply Yanofsky
   exists g
+
+/-
+Second generalization due to Roberts (2023) "Substructural fixed-point theorems and the diagonal argument: theme and variations" https://compositionality-journal.org/papers/compositionality-5-8/pdf/
+-/
+
+def geometers_property {A Y: Type} (g: A → A → Y): Prop :=
+  ∀ t: Y → Y, ∃ a0: A, ∀ a: A, t (g a a) = g a0 a 
+
+def rs_implies_gp {A Y: Type} (g: A → A → Y): represents_some g → geometers_property g := by
+  intro h1
+  rw [geometers_property]
+  intro t
+  have h2 := h1 t
+  obtain ⟨a0, h3⟩ := h2
+  exists a0
+
+theorem MagmoidalFixedPointTheorem: ∀ Y: Type, (∃ g: A → A → Y, geometers_property g) → fixed_point_property Y := by
+  intro Y h1
+  rw [fixed_point_property]
+  intro t
+  obtain ⟨g, h2⟩ := h1
+  obtain ⟨a0, h3⟩ := h2 t
+  exists g a0 a0
+  apply h3
+
+/- show Magmoidal theorem implies Lawvere via Yanofsky -/
+theorem LawvereProof3: ∀ Y: Type, (∃ g: A → A → Y, weakly_point_surjective g) → fixed_point_property Y := by
+  intro Y h1
+  obtain ⟨g, h2⟩ := h1
+  have h3: geometers_property g := by
+    apply rs_implies_gp
+    apply wps_implies_rs
+    exact h2
+  apply Yanofsky
+  exists g
