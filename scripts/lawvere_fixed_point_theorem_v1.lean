@@ -30,6 +30,10 @@ def representable {A Y: Type} (g: A → A → Y) (f: A → Y): Prop :=
 def represents_all {A Y: Type} (g: A → A → Y): Prop :=
   ∀ f: A → Y, representable g f
 
+/-
+As Yanofsky said we only need g to be able to represent functions in the form diag;g;t for some endomorphism t.
+-/
+
 def represents_some {A Y: Type} (g: A → A → Y): Prop :=
   ∀ t: Y → Y, representable g (fun a => t (g a a))
 
