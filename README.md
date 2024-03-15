@@ -1,3 +1,5 @@
+**Want to try these scripts without installing Lean? Try [live.lean-lang.org](https://live.lean-lang.org/)!**
+
 A collection of scripts written in [Lean4](https://lean-lang.org).
 
 They are meant to be self-contained and only use Mathlib when necessary.
