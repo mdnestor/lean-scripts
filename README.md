@@ -1,4 +1,4 @@
-A collection of scripts written in [Lean 4](https://lean-lang.org). Most of them are self-contained and only use Mathlib when necessary.
+A collection of scripts written in [Lean 4](https://lean-lang.org). Most of them are self-contained without dependencies on mathlib.
 
 **Try Lean online** at [live.lean-lang.org](https://live.lean-lang.org/)!
 
