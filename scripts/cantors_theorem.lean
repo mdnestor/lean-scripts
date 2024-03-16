@@ -20,7 +20,8 @@ theorem Cantor: ∀ A: Type, ∀ f: A → subset A, ¬ surjective f := by
   intro h1
   obtain ⟨B, h2⟩: ∃ B: subset A, ∀ x: A, (B x → ¬ (f x) x) ∧ (¬ (f x) x → B x) := by
     exists fun x => ¬ (f x) x
-    simp 
+    intros
+    exact ⟨id, id⟩ 
   obtain ⟨z, h3⟩ := h1 B
   have h4 := h2 z
   rw [h3] at h4
