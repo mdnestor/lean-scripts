@@ -7,6 +7,7 @@ inductive Natural where
 | zero: Natural
 | next: Natural → Natural
 
+-- next we define addition and multiplication by cases
 def add (a b: Natural): Natural :=
   match a with
   -- by cases: if a=0, then a+b = 0+b = b
