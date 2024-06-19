@@ -1,10 +1,10 @@
 A collection of mathematical definitions and theorems written in [Lean 4](https://lean-lang.org). Most are self-contained without dependency [mathlib](https://github.com/leanprover-community/mathlib4).
 
 Samples:
-- [triangular_number.lean](./scripts/triangular_number.lean) - proof that $1+2+3+...+n = \frac{n(n+1)}{2}$ by induction.
-- [cantors_theorem.lean](./scripts/cantors_theorem.lean) - proof of Cantor's theorem. Surprisingly simple!
-- [category_of_monoids.lean](./scripts/category_of_monoids.lean) - definition monoids and proof they form a category.
-- [noetherian-ring.lean](./scripts/noetherian-ring.lean) - definition of a Noetherian ring.
+- [triangular_number.lean](scripts/triangular_number.lean) - proof that $1+2+3+...+n = \frac{n(n+1)}{2}$ by induction.
+- [cantors_theorem.lean](scripts/cantors_theorem.lean) - proof of Cantor's theorem. Surprisingly simple!
+- [category_of_monoids.lean](scripts/category_of_monoids.lean) - definition monoids and proof they form a category.
+- [noetherian-ring.lean](scripts/noetherian-ring.lean) - definition of a Noetherian ring.
 
 Want to tinker without installing? **Try Lean online** at [live.lean-lang.org](https://live.lean-lang.org/)!
 
