@@ -23,11 +23,11 @@ def mul (a b: Natural): Natural :=
   | Natural.next n => add (mul n b) b
 
 -- some basic helper theorems, not worth proving here
-theorem add_comm (a b: Natural): add a b = add b a := sorry
-theorem mul_comm (a b: Natural): mul a b = mul b a := sorry
-theorem add_assoc (a b c: Natural): add a (add b c) = add (add a b) c := sorry
-theorem mul_assoc (a b c: Natural): mul a (mul b c) = mul (mul a b) c := sorry
-theorem distrib (a b c: Natural): mul a (add b c) = add (mul a b) (mul a c) := sorry
+theorem add_comm: ∀ a b: Natural, add a b = add b a := sorry
+theorem mul_comm: ∀ a b: Natural, mul a b = mul b a := sorry
+theorem add_assoc: ∀ a b c: Natural, add a (add b c) = add (add a b) c := sorry
+theorem mul_assoc: ∀ a b c: Natural, mul a (mul b c) = mul (mul a b) c := sorry
+theorem distrib: ∀ a b c: Natural, mul a (add b c) = add (mul a b) (mul a c) := sorry
 
 -- define the n-th triangular number to be 0+1+...+n
 def triangular (n: Natural): Natural :=
