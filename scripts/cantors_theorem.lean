@@ -10,20 +10,16 @@ Then ∃ z ∈ A such that f(z) = B.
 This yields the contradiction z ∈ B ↔ z ∉ f(z) = B.
 -/
 
-def subset (A: Type): Type := A → Prop
+def subset (A : Type) : Type := A → Prop
 
-def surjective {A B: Type} (f: A → B): Prop := ∀ b: B, ∃ a: A, f a = b
+def surjective {A B : Type} (f : A → B) : Prop := ∀ b : B, ∃ a : A, f a = b
 
-theorem Cantor: ∀ A: Type, ∀ f: A → subset A, ¬ surjective f := by
-  intro A f
+theorem Cantor (A : Type) (f : A → subset A) : ¬ surjective f := by
   apply Not.intro
-  intro h1
-  obtain ⟨B, h2⟩: ∃ B: subset A, ∀ x: A, (B x → ¬ (f x) x) ∧ (¬ (f x) x → B x) := by
-    exists fun x => ¬ (f x) x
-    intros
-    exact ⟨id, id⟩ 
-  obtain ⟨z, h3⟩ := h1 B
-  have h4 := h2 z
-  rw [h3] at h4
-  have h5 := fun x => h4.1 x x
-  exact h5 (h4.2 h5)
+  intro h0
+  let B : subset A := fun x => ¬ (f x) x
+  obtain ⟨z, h1⟩ := h0 B
+  have h2 : B z ↔ ¬ (f z) z := by rfl
+  rw [h1] at h2
+  have h3 : B z → False := fun x => h2.1 x x
+  exact h3 (h2.2 h3)
