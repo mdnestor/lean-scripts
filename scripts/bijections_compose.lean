@@ -7,6 +7,22 @@ def surjection (f: A → B): Prop :=
 def bijection (f: A → B): Prop :=
   injection f ∧ surjection f
 
+theorem identity_injection: injection (fun a: A => a) := by
+  rw [injection]
+  intro _ _ h
+  exact h
+
+theorem identity_surjection: surjection (fun a: A => a) := by
+  rw [surjection]
+  intro a
+  exists a
+
+theorem identity_bijection: bijection (fun a: A => a) := by
+  rw [bijection]
+  apply And.intro
+  exact identity_injection
+  exact identity_surjection
+
 theorem injections_compose (f: A → B) (g: B → C) (h1: injection f) (h2: injection g): injection (g ∘ f) := by
   rw [injection]
   intros a1 a2 h
