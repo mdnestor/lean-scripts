@@ -27,7 +27,7 @@ def NatMonoid: Monoid Nat := {
 }
 
 -- the monoid homomorphism that sends a list to its length
-def Length (α: Type): MonoidHomomorphism (ListMonoid α) NatMonoid := {
+def LengthHomomorphism (α: Type): MonoidHomomorphism (ListMonoid α) NatMonoid := {
   func := List.length
   preserve := List.length_append
 }
