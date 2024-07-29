@@ -1,5 +1,10 @@
 axiom Human: Type
-axiom is_mortal: Human -> Prop
-axiom all_humans_are_mortal: forall h: Human, is_mortal h
+
 axiom socrates: Human
-theorem socrates_is_mortal: is_mortal socrates := by apply all_humans_are_mortal
+
+axiom mortal: Human -> Prop
+
+axiom humans_are_mortal: forall h: Human, mortal h
+
+theorem socrates_is_mortal: mortal socrates := by
+  exact humans_are_mortal socrates
