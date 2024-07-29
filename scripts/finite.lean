@@ -1,19 +1,84 @@
-def finite (X: Type): Prop := ∃ L: List X, ∀ x: X, x ∈ L
+-- A type is finite if there exists an exhaustive list of its terms
+def finite (X: Type): Prop :=
+  ∃ L: List X, ∀ x: X, x ∈ L
 
-example (X Y: Type) (hx: finite X) (hy: finite Y): finite (X × Y) := sorry
-example (X Y: Type) (hx: finite X) (hy: finite Y): finite (X → Y) := sorry
-example (n: Nat): finite (Fin n) := sorry
-example: ¬ finite Nat := sorry
-example: finite Bool := sorry
-example: ¬ finite Prop := sorry
+-- The sum of two finite types is finite
+theorem sum_finite (X Y: Type): finite X ∧ finite Y → finite (Sum X Y) := by
+  intro ⟨h0, h1⟩
+  obtain ⟨L0, h2⟩ := h0
+  obtain ⟨L1, h3⟩ := h1
+  let L0s : List (Sum X Y) := List.map Sum.inl L0
+  let L1s : List (Sum X Y) := List.map Sum.inr L1
+  exists List.append L0s L1s
+  intro x
+  cases x with
+  | inl x => 
+    apply List.mem_append_left
+    apply List.mem_map_of_mem
+    exact h2 x
+  | inr x => 
+    apply List.mem_append_right
+    apply List.mem_map_of_mem
+    exact h3 x
 
-def injective {X Y: Type} (f: X → Y): Prop := ∀ x1 x2: X, f x2 = f x2 → x1 = x2
-def surjective {X Y: Type} (f: X → Y): Prop := ∀ y: Y, ∃ x: X, f x = y
-def bijective {X Y: Type} (f: X → Y): Prop := injective f ∧ surjective f
+def List.product {X Y : Type} (xs : List X) (ys : List Y) : List (X × Y) :=
+    xs.bind (λ x => ys.map (λ y => (x, y)))
 
-theorem t1 (X Y: Type) (f: X → Y) (h: injective f): finite Y → finite X := sorry
-theorem t2 (X Y: Type) (f: X → Y) (h: surjective f): finite X → finite Y := sorry
-theorem t3 (X Y: Type) (f: X → Y) (h: bijective f): finite X ↔ finite Y := by
-  apply Iff.intro
-  intro h1; apply t2; exact h.2; exact h1
-  intro h1; apply t1; exact h.1; exact h1
+-- The product of two finite types is finite
+theorem prod_finite (X Y: Type): finite X ∧ finite Y → finite (Prod X Y) := by
+  intro ⟨h0, h1⟩
+  obtain ⟨L0, h2⟩ := h0
+  obtain ⟨L1, h3⟩ := h1
+  exists List.product L0 L1
+  intro (x, y)
+  rw [List.product]
+  simp
+  exact ⟨h2 x, h3 y⟩
+
+-- The exponential of two finite types is finite
+theorem func_finite (X Y: Type): finite X ∧ finite Y → finite (X → Y) := by
+  sorry
+
+-- The finite type is finite
+theorem fin_finite (n: Nat): finite (Fin n) := by
+  sorry
+
+theorem nat_infinite: ¬ finite Nat := by
+  -- idea: any list of natural numbers has a maximum m, so m + 1 is not a member
+  sorry
+
+theorem bool_finite: finite Bool := by
+  exists [true, false]
+
+theorem prop_infinite: ¬ finite Prop :=
+  -- no clue!
+  sorry
+
+def injective {X Y: Type} (f: X → Y): Prop :=
+  ∀ x1 x2: X, f x2 = f x2 → x1 = x2
+
+def surjective {X Y: Type} (f: X → Y): Prop :=
+  ∀ y: Y, ∃ x: X, f x = y
+
+def bijective {X Y: Type} (f: X → Y): Prop :=
+  injective f ∧ surjective f
+
+-- if f : X → Y is an injection and Y is finite then X is finite
+theorem injection_finite {X Y: Type} {f: X → Y}: injective f → finite Y → finite X := by
+  sorry
+
+-- if f : X → Y is an surjection and X is finite then Y is finite
+theorem surjection_finite {X Y: Type} {f: X → Y}: surjective f → finite X → finite Y := by
+  intro h0 h1
+  obtain ⟨L0, h2⟩ := h1
+  exists List.map f L0
+  intro y
+  simp [h0 y]
+  obtain ⟨x, h3⟩ := h0 y
+  exists x
+  exact ⟨h2 x, h3⟩
+
+-- if f : X → Y is an bijection then X is finite iff. Y is finite
+theorem bijection_finite {X Y: Type} {f: X → Y}: bijective f → (finite X ↔ finite Y) := by
+  intro ⟨h0, h1⟩
+  exact ⟨surjection_finite h1, injection_finite h0⟩
