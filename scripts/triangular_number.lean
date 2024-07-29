@@ -1,13 +1,7 @@
 /-
-The n-th triangular number is defined as the sum of the first n natural numbers:
-
-T(n) = 0+1+2+3+...+n
-
-It can be proved via induction that
-
-T(n) = n*(n+1)/2
-
-To avoid integer division, we will prove 2 * T(n) = n*(n+1).
+The n-th triangular number is defined as the sum of the first n natural numbers: T(n) = 0+1+2+3+...+n
+It can be proved via induction that T(n) = n*(n+1)/2.
+To avoid integer division, we will instead prove 2 * T(n) = n*(n+1).
 -/
 
 def triangular (n: Nat): Nat :=
