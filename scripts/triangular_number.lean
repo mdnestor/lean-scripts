@@ -12,6 +12,7 @@ def triangular (n: Nat): Nat :=
 /-
 Inductive proof using the `calc` tactic.
 https://github.com/leanprover/theorem_proving_in_lean4/blob/master/quantifiers_and_equality.md#calculational-proofs
+Useful lemmas about natural number arithmetic come from https://github.com/leanprover/lean4/blob/master/src/Init/Data/Nat/Basic.lean
 -/
 
 theorem triangular_formula: ∀ n: Nat, 2 * (triangular n) = n * (n + 1) := by
