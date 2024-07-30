@@ -12,8 +12,7 @@ def even (n: Nat): Prop :=
 theorem odd (n: Nat): (∃ k: Nat, n = 2*k + 1) ↔ ¬(even n) := by
   sorry
 
-theorem sum_of_even_is_even (m n: Nat): even m ∧ even n → even (m + n) := by
-  intro ⟨h0, h1⟩
+theorem sum_of_even_is_even (m n: Nat) (h0: even m) (h1: even n): even (m + n) := by
   obtain ⟨k0, h2⟩ := h0
   obtain ⟨k1, h3⟩ := h1
   exists k0 + k1
@@ -21,8 +20,7 @@ theorem sum_of_even_is_even (m n: Nat): even m ∧ even n → even (m + n) := by
     2 * (k0 + k1) = 2 * k0 + 2 * k1 := by rw [Nat.left_distrib]
                 _ = m + n           := by rw [h2, h3]
 
-theorem product_of_even_is_even (m n: Nat): even m ∧ even n → even (m * n) := by
-  intro ⟨h0, h1⟩
+theorem product_of_even_is_even (m n: Nat) (h0: even m) (h1: even n): even (m * n) := by
   obtain ⟨k0, h2⟩ := h0
   obtain ⟨k1, h3⟩ := h1
   exists 2 * k0 * k1
