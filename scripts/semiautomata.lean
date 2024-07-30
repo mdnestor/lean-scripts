@@ -9,18 +9,23 @@ structure Semiautomaton where
 def run {M: Semiautomaton} (inputs: List M.input): M.state → M.state :=
   match inputs with
   | [] => fun s => s
-  | head :: tail => fun s => M.update head (run tail s)
+  | head :: tail => fun s => run tail (M.update head s)
 
 -- appending lists of inputs corresponds to composing run maps
 theorem semiautomaton_append_compose (M: Semiautomaton) (inputs0 inputs1: List M.input): run (List.append inputs0 inputs1) = Function.comp (run inputs1) (run inputs0) := by
-  funext s
-  induction inputs1 with
+  induction inputs0 with
   | nil =>
-    simp [run, List.append, Function.comp]
+    ext s
+    rw [run, List.append, Function.comp]
   | cons head tail ih =>
-    sorry
+    simp [run, List.append, Function.comp]
+    ext s
+    rw [← List.append_eq]
+    rw [congrFun ih (M.update head s)]
+    simp
 
--- the transition monoid
+-- the input monoid
+
 structure Monoid where
   elt: Type
   op: elt → elt → elt
@@ -29,26 +34,28 @@ structure Monoid where
   unit_left: ∀ x: elt, op unit x = x
   unit_right: ∀ x: elt, op x unit = x
 
-structure MonoidAction (M: Monoid) (X: Type) where
-  func: M.elt → X → X
-  preserve: ∀ m1 m2: M.elt, ∀ x: X, func m1 (func m2 x) = func (M.op m1 m2) x
+structure RightMonoidAction (M: Monoid) (X: Type) where
+  act: M.elt → X → X
+  preserve: ∀ m0 m1: M.elt, ∀ x: X, act m1 (act m0 x) = act (M.op m0 m1) x
 
 def FreeMonoid (A: Type): Monoid := {
   elt := List A
   op := List.append
   unit := []
-  assoc := sorry
-  unit_left := sorry
-  unit_right := sorry
+  assoc := List.append_assoc
+  unit_left := List.nil_append
+  unit_right := List.append_nil
 }
 
--- every semiautomaton corresponds to the action of the free monoid on its inputs acting on its state
-def InputMonoid (M: Semiautomaton): MonoidAction (FreeMonoid M.input) M.state := {
-  func := fun inputs s => run inputs s
+-- every semiautomaton corresponds to a (right) action of the free monoid on its inputs acting on its state
+def InputMonoid (M: Semiautomaton): RightMonoidAction (FreeMonoid M.input) M.state := {
+  act := fun inputs s => run inputs s
   preserve := by
     intro inputs1 inputs2 s
-    simp
-    sorry
+    simp [FreeMonoid]
+    rw [←List.append_eq_append]
+    rw [semiautomaton_append_compose]
+    rw [Function.comp]
 }
 
 -- given states s0 and s1, s0 can reach s1 if there exists a sequence of inputs mapping s0 to s1
@@ -65,7 +72,7 @@ theorem reach_transitive {M: Semiautomaton} (s0 s1 s2: M.state): reach s0 s1 ∧
   exists List.append as0 as1
   rw [semiautomaton_append_compose]
   rw [Function.comp]
-  rw [h2]
+  rw [h2, h3]
   
 -- https://en.wikipedia.org/wiki/Preorder
 structure Preorder (X: Type) where
