@@ -27,7 +27,7 @@ theorem product_of_even_is_even (m n: Nat) (h0: even m) (h1: even n): even (m * 
   calc
     2 * (2 * k0 * k1) = 2 * (k0 * 2 * k1)   := by rw [Nat.mul_comm 2 k0]
                     _ = (2 * k0) * (2 * k1) := by repeat rw [Nat.mul_assoc]
-                    _ = m * n := by rw [h2, h3]
+                    _ = m * n               := by rw [h2, h3]
 
 -- helper.. probably redundant
 theorem contrapositive (P Q: Prop): P → Q ↔ (¬ Q → ¬ P) := by
@@ -44,11 +44,11 @@ theorem even_iff_square_even (n: Nat): even n ↔ even (n^2) := by
   exists 2 * k^2
   calc
     2 * (2 * k ^ 2) = 2 * (2 * (k * k)) := by rw [Nat.pow_two]
-                  _ = 2 * (2 * k * k) := by rw [Nat.mul_assoc]
-                  _ = 2 * (k * 2 * k) := by rw [Nat.mul_comm 2 k]
+                  _ = 2 * (2 * k * k)   := by rw [Nat.mul_assoc]
+                  _ = 2 * (k * 2 * k)   := by rw [Nat.mul_comm 2 k]
                   _ = (2 * k) * (2 * k) := by repeat rw [Nat.mul_assoc]
-                  _ = n * n := by rw [h1]
-                  _ = n^2 := by rw [Nat.pow_two]
+                  _ = n * n             := by rw [h1]
+                  _ = n^2               := by rw [h1, Nat.pow_two]
   -- reverse
   rw [contrapositive]
   intro h0
