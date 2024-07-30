@@ -1,3 +1,9 @@
+/-
+this file:
+- defines semiautomata as state machines with an input alphabet
+- defines the action of the free monoid of the input alphabet
+- defines the reachability relation and shows it forms a preorder
+-/
 
 -- A semiautomaton consists of a state set, input set, and transition map
 structure Semiautomaton where
@@ -58,13 +64,15 @@ def InputMonoid (M: Semiautomaton): RightMonoidAction (FreeMonoid M.input) M.sta
     rw [Function.comp]
 }
 
--- given states s0 and s1, s0 can reach s1 if there exists a sequence of inputs mapping s0 to s1
+-- the reachability relation: given states s0 and s1, s0 can reach s1 if there exists a sequence of inputs mapping s0 to s1
 def reach {M: Semiautomaton} (s0 s1: M.state): Prop :=
   ∃ inputs: List M.input, run inputs s0 = s1
 
+-- any state can reach itself via the empty list of inputs
 theorem reach_reflexive {M: Semiautomaton} (s: M.state): reach s s := by
   exists []
 
+-- if s0 can reach s1 and s1 can reach s2 then s0 can reach s2 via concatenating inputs
 theorem reach_transitive {M: Semiautomaton} (s0 s1 s2: M.state): reach s0 s1 ∧ reach s1 s2 → reach s0 s2 := by
   intro ⟨h0, h1⟩
   obtain ⟨as0, h2⟩ := h0
