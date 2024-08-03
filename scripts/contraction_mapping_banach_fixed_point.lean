@@ -6,6 +6,7 @@ https://www.math.ucdavis.edu/~hunter/book/ch3.pdf
 -/
 
 import Mathlib.Data.Real.Basic
+import Mathlib.Tactic.Linarith
 
 structure MetricSpace (X: Type) where
   dist: X → X → Real
@@ -26,22 +27,40 @@ def cauchy (M: MetricSpace X) (a: Nat → X): Prop :=
 def complete (M: MetricSpace X): Prop :=
   ∀ a: Nat → X, cauchy M a → ∃ x: X, converges M a x
 
-theorem limit_unique (h1: converges M a x1) (h2: converges M a x2): x1 = x2 := by
+theorem arbitrarily_close_eq (x: Real) (h: x ≥ 0): (∀ ε: Real, ε > 0 → x < ε) → x = 0 := by
   sorry
+
+theorem limit_unique (h1: converges M a x1) (h2: converges M a x2): x1 = x2 := by
+  -- we can show for every ε > 0 that dist x1 x2 < ε
+  have x1_x2_arbitrarily_close: ∀ ε: Real, ε > 0 → M.dist x1 x2 < ε := by
+    intro ε ε_pos
+    have ε_div_2_pos: ε/2 > 0 := div_pos_iff.mpr (Or.inl ⟨ε_pos, two_pos⟩)
+    obtain ⟨N1, conv_impl1⟩ := h1 (ε/2) ε_div_2_pos
+    obtain ⟨N2, conv_impl2⟩ := h2 (ε/2) ε_div_2_pos
+    let n := max N1 N2
+    have an_near_x1 := conv_impl1 n (by apply le_max_left)
+    have an_near_x2 := conv_impl2 n (by apply le_max_right)
+    calc
+      M.dist x1 x2 ≤ M.dist x1 (a n) + M.dist (a n) x2 := by apply M.tri
+                 _ = M.dist (a n) x1 + M.dist (a n) x2 := by rw [M.symm]
+                 _ < ε/2 + ε/2                         := by linarith [an_near_x1, an_near_x2]
+                 _ = ε                                 := by simp
+  have dist_x1_x2_zero := arbitrarily_close_eq (M.dist x1 x2) (M.nonneg x1 x2) x1_x2_arbitrarily_close
+  exact (M.eq_iff_dist_zero x1 x2).mpr dist_x1_x2_zero
 
 -- If a(0), a(1), a(2), ... converges to x and f is continuous then f(a(0)), f(a(1)), f(a(2)), ... converges to f(x)
 theorem apply_continuous_function_to_convergent_sequence (h1: converges M1 a x) (h2: continuous M1 M2 f): converges M2 (f ∘ a) (f x) := by
-  intro ε h3
-  obtain ⟨δ, ⟨h4, h5⟩⟩ := h2 x ε h3
-  obtain ⟨N, h6⟩ := h1 δ h4
+  intro ε ε_pos
+  obtain ⟨δ, ⟨δ_pos, ε_δ_impl⟩⟩ := h2 x ε ε_pos
+  obtain ⟨N, a_convergence_impl⟩ := h1 δ δ_pos
   exists N
-  intro n h7
-  have h8 := h5 (a n)
-  have h9 := h6 n h7
-  rw [M1.symm] at h9
-  have h10 := h8 h9
-  rw [M2.symm] at h10
-  exact h10
+  intro n N_leq_n
+  have ε_δ_impl_an := ε_δ_impl (a n)
+  have dist_an_x_lt_δ := a_convergence_impl n N_leq_n
+  rw [M1.symm] at dist_an_x_lt_δ
+  have dist_fan_fx_lt_ε := ε_δ_impl_an dist_an_x_lt_δ
+  rw [M2.symm] at dist_fan_fx_lt_ε
+  exact dist_fan_fx_lt_ε
 
 -- The t-th tail of a sequence a(0), a(1), a(2) ... is the sequence a(t), a(t+1), a(t+2), ...
 def tail {X: Type} (a: Nat → X) (t: Nat): Nat → X :=
@@ -49,13 +68,13 @@ def tail {X: Type} (a: Nat → X) (t: Nat): Nat → X :=
 
 -- If a sequence converges to x then so does every tail
 theorem tail_converge (h: converges M a x) (t: Nat): converges M (tail a t) x := by
-  intro ε h1
-  obtain ⟨N, h2⟩ := h ε h1
+  intro ε ε_pos
+  obtain ⟨N, conv_impl⟩ := h ε ε_pos
   exists N - t
   intro n
   simp
   rw [tail]
-  exact h2 (n + t)
+  exact conv_impl (n + t)
 
 -- Given a function f: X → X and a point x: X, the orbit is the sequence x, f(x), f(f(x))), ...
 def orbit (f: X → X) (x: X) : Nat → X :=
@@ -80,35 +99,61 @@ def contraction (M: MetricSpace X) (T: X → X): Prop :=
   ∃ c: Real, 0 ≤ c ∧ c < 1 ∧ ∀ x y: X, M.dist (T x) (T y) ≤ c * (M.dist x y)
 
 -- https://math.stackexchange.com/a/1800125
-theorem contraction_continuous (M: MetricSpace X) (T: X → X) (h: contraction M T): continuous M M T := by
-  obtain ⟨c, ⟨h1, h2, h3⟩⟩ := h
-  intro x ε h4
-  by_cases h5: c = 0
-  sorry
-  exists ε/c
-  sorry
 
-theorem contraction_mapping_theorem {M: MetricSpace X} (h1: complete M) (h2: contraction M T): ∃! x: X, T x = x := by
+theorem contraction_continuous (M: MetricSpace X) (T: X → X) (h: contraction M T): continuous M M T := by
+  obtain ⟨c, ⟨c_nonneg, _, contr_ineq⟩⟩ := h
+  intro x ε ε_pos
+  by_cases c_case: c = 0
+  exists ε
+  apply And.intro
+  exact ε_pos
+  intro y _
+  simp [c_case] at contr_ineq
+  calc
+    M.dist (T x) (T y) ≤ 0 := by apply contr_ineq
+                     _ < ε := ε_pos
+  have c_pos: c > 0 := lt_of_le_of_ne c_nonneg (ne_comm.mp c_case)
+  exists ε/c
+  apply And.intro
+  exact div_pos_iff.mpr (Or.inl ⟨ε_pos, c_pos⟩)
+  intro y x_y_within_eps_div_c
+  calc
+    M.dist (T x) (T y) ≤ c * M.dist x y := by apply contr_ineq
+                     _ < c * (ε / c)    := by apply (mul_lt_mul_left c_pos).mpr x_y_within_eps_div_c
+                     _ = ε              := by rw [mul_div_cancel₀ ε c_case]
+
+theorem easy_lemma {a b: Real} (h1: a ≤ b * a) (h2: a ≥ 0) (h3: b < 1): a = 0 := by
+  apply Classical.not_not.mp
+  apply Not.intro
+  intro a_neq_zero
+  have a_gt_zero := lt_of_le_of_ne h2 (ne_comm.mp a_neq_zero)
+  have a_div_a_leq_b := (div_le_iff a_gt_zero).mpr h1
+  rw [div_self a_neq_zero] at a_div_a_leq_b
+  have b_not_lt_one := not_lt.mpr a_div_a_leq_b
+  contradiction
+
+theorem contraction_mapping_theorem {M: MetricSpace X} (h0: Nonempty X) (h1: complete M) (h2: contraction M T): ∃! x: X, T x = x := by
   -- assume X is nonempty, pick an arbitrary point
-  let x0: X := Classical.choice sorry
+  let x0: X := Classical.choice h0
   -- define a sequence
   let a: Nat → X := orbit T x0
   -- show it is cauchy (hard)
-  have h3 : cauchy M a := sorry
+  have a_cauchy: cauchy M a := sorry
   -- since the sequence is cauchy it has a limit
-  obtain ⟨x, h4⟩ := h1 a h3
+  obtain ⟨x, a_converges_to_x⟩ := h1 a a_cauchy
   exists x
-  apply And.intro
   -- need to show x is indeed a fixed point
-  exact orbit_converge_to_fixed_point (contraction_continuous M T h2) h4
+  have x_fixed_point := orbit_converge_to_fixed_point (contraction_continuous M T h2) a_converges_to_x
+  apply And.intro
+  exact x_fixed_point
   -- now show point is unique
   intro y
   simp
-  intro h5
-  obtain ⟨c, ⟨h6, h7, h8⟩⟩ := h2
-  have h9 := calc
-    M.dist x y = M.dist (T x) (T y) := by sorry
-               _ ≤ c * (M.dist x y) := by sorry
-  have h10: M.dist x y = 0 := sorry
-  have h11 := (M.eq_iff_dist_zero x y).mpr h10
-  simp [h11]
+  intro y_fixed_point
+  apply eq_comm.mp
+  obtain ⟨c, ⟨c_geq_zero, c_lt_one, contraction_ineq⟩⟩ := h2
+  have x_y_dist_leq_c_mul_x_y_dist := calc
+    M.dist x y = M.dist (T x) (T y) := by rw [x_fixed_point, y_fixed_point]
+               _ ≤ c * (M.dist x y) := by apply contraction_ineq
+  have x_y_dist_zero: M.dist x y = 0 := easy_lemma x_y_dist_leq_c_mul_x_y_dist (M.nonneg x y) c_lt_one
+  exact (M.eq_iff_dist_zero x y).mpr x_y_dist_zero
