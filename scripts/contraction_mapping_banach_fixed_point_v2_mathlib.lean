@@ -73,28 +73,25 @@ theorem tail_converge (h: converges M a x) (t: Nat): converges M (tail a t) x :=
   exact conv_impl (n + t)
 
 -- Given a function f: X → X and a point x: X, the orbit is the sequence x, f(x), f(f(x))), ...
-def orbit (f: X → X) (x: X) : Nat → X :=
+def orbit {X: Type} (f: X → X) (x: X) : Nat → X :=
   fun n =>
   match n with
   | Nat.zero => x
   | Nat.succ p => f ((orbit f x) p)
 
-theorem orbit_tail (f: X → X) (x: X): f ∘ (orbit f x) = tail (orbit f x) 1 := by
+theorem orbit_tail {X: Type} (f: X → X) (x: X): f ∘ (orbit f x) = tail (orbit f x) 1 := by
   ext
   rw [tail, orbit]
   rfl
 
 -- If an orbit of f converges, the limit is a fixed point of f
 theorem orbit_converge_to_fixed_point (h1: continuous M M f) (h2: converges M (orbit f x) L): f L = L := by
-  sorry
-  /-
   have h3 := apply_continuous_function_to_convergent_sequence h2 h1
   rw [orbit_tail] at h3
   have h4 := tail_converge h2 1
   exact limit_unique h3 h4
-  -/
 
-def contraction (M: MetricSpace X) (T: X → X): Prop :=
+def contraction {X: Type} (M: MetricSpace X) (T: X → X): Prop :=
   ∃ c: Real, 0 ≤ c ∧ c < 1 ∧ ∀ x y: X, M.dist (T x) (T y) ≤ c * (M.dist x y)
 
 -- https://math.stackexchange.com/a/1800125
@@ -134,11 +131,51 @@ theorem easy_lemma {a b: Real} (h1: a ≤ b * a) (h2: a ≥ 0) (h3: b < 1): a = 
   have b_not_lt_one := not_lt.mpr a_div_a_leq_b
   contradiction
 
-theorem geom_series_bound (c: Real) (n: Nat): 0 ≤ c → c < 1 → (∑ i in Finset.range n, c^i) ≤ 1 / (1 - c) := by
+theorem geom_series_bound (c: Real) (n: Nat): 0 ≤ c → c < 1 → (∑ i in Finset.range n, c^i) ≤ (1 - c)⁻¹ := by
   sorry
 
 theorem pow_reverse {c: Real} {m n: Nat}: 0 ≤ c → c < 1 → m ≤ n → c^n ≤ c^m := by
   sorry
+
+-- if T is a contraction then dist( T^n(x), T^n(y) ) ≤ c^n * dist(x, y)
+theorem orbit_cauchy_lemma1 {M: MetricSpace X} (x y: X) (n: Nat) (c: Real) (c_nonneg: c ≥ 0) (contr_ineq: ∀ (x y : X), dist (T x) (T y) ≤ c * dist x y): M.dist (orbit T x n) (orbit T y n) ≤ c^n * M.dist x y := by
+  induction n with
+  | zero => {
+    repeat simp [orbit]
+  }
+  | succ p h_induction => {
+    rw [orbit, orbit]
+    calc
+      M.dist (T (orbit T x p)) (T (orbit T y p))
+      ≤ c * M.dist (orbit T x p) (orbit T y p) := by apply contr_ineq
+      _ ≤ c * (c^p * M.dist x y)               := mul_le_mul_of_nonneg_left h_induction c_nonneg
+      _ = c^(p+1) * M.dist x y                 := by ring
+  }
+
+-- if T is a contraction then dist(x, T^n(x)) ≤ (1+c+...+c^(n-1)) * dist(x, Tx)
+theorem orbit_cauchy_lemma2 {M: MetricSpace X} (x: X) (n: Nat) (c: Real) (c_nonneg: c ≥ 0) (contr_ineq: ∀ (x y : X), dist (T x) (T y) ≤ c * dist x y): M.dist x (orbit T x n) ≤ (∑ i in Finset.range n, c^i) * M.dist x (T x) := by
+  induction n with
+  | zero => {
+    rw [orbit]
+    simp [M.eq_of_dist_eq_zero]
+  }
+  | succ p h_induction => {
+    rw [orbit]
+    calc
+      M.dist x (T (orbit T x p))
+        ≤ M.dist x (orbit T x p) + M.dist (orbit T x p) (T (orbit T x p))     := by apply M.dist_triangle
+      _ ≤ (∑ i ∈ Finset.range p, c^i) * M.dist x (T x) + M.dist (orbit T x p) (orbit T (T x) p)
+                                                                              := by sorry -- rw [h_induction]
+      _ ≤ (∑ i ∈ Finset.range p, c^i) * M.dist x (T x) + c^p * M.dist x (T x) := by sorry -- rw [h_funfact1 x (T x) p]
+      _ = ((∑ i ∈ Finset.range p, c^i) + c^p) * M.dist x (T x)                := by sorry -- rw [left_distrib]
+      _ = (∑ i ∈ Finset.range (p+1), c^i) * M.dist x (T x)                    := by sorry -- definition of Finset.range
+  }
+
+-- if T is a contraction then dist(x, T^n(x)) ≤ (1 - c)⁻¹ * dist(x, Tx)
+theorem orbit_cauchy_lemma3 {M: MetricSpace X} (x: X) (n: Nat) (c: Real) (c_nonneg: c ≥ 0) (c_lt_one: c < 1) (contr_ineq: ∀ (x y : X), dist (T x) (T y) ≤ c * dist x y): M.dist x (orbit T x n) ≤ (1 - c)⁻¹ * M.dist x (T x) := by
+  calc
+    M.dist x (orbit T x n) ≤ (∑ i in Finset.range n, c^i) * M.dist x (T x) := orbit_cauchy_lemma2 x n c c_nonneg contr_ineq
+    _ ≤ (1 - c)⁻¹ * M.dist x (T x) := mul_le_mul_of_nonneg_right (geom_series_bound c n c_nonneg c_lt_one) dist_nonneg
 
 theorem orbit_cauchy {M: MetricSpace X} (h1: contraction M T): cauchy M (orbit T x0) := by
   intro ε ε_pos
@@ -154,71 +191,40 @@ theorem orbit_cauchy {M: MetricSpace X} (h1: contraction M T): cauchy M (orbit T
     _ = M.dist (T (orbit T x0 (m - 1))) (T (orbit T x0 (m - 1))) := by rw [contr_ineq]
     _ ≤ 0 := by rw [M.dist_self]
     _ < ε := ε_pos
-  -- three important lemmas. would move them outside body but they depend on c
-  have h3 (x y: X) (n: Nat): M.dist (orbit T x n) (orbit T y n) ≤ c^n * M.dist x y := by
-    induction n with
-    | zero => {
-      repeat simp [orbit]
-    }
-    | succ p h_induction => {
-      rw [orbit, orbit]
-      calc
-        M.dist (T (orbit T x p)) (T (orbit T y p))
-        ≤ c * M.dist (orbit T x p) (orbit T y p) := by apply contr_ineq
-        _ ≤ c * (c^p * M.dist x y)               := mul_le_mul_of_nonneg_left h_induction c_nonneg
-        _ = c^(p+1) * M.dist x y                 := by ring
-    }
-  have h4 (x: X) (n: Nat): M.dist x (orbit T x n) ≤ (∑ i in Finset.range n, c^i) * M.dist x (T x) := by
-    induction n with
-    | zero => {
-      rw [orbit]
-      simp [M.eq_of_dist_eq_zero]
-    }
-    | succ p h_induction => {
-      rw [orbit]
-      calc
-        M.dist x (T (orbit T x p))
-          ≤ M.dist x (orbit T x p) + M.dist (orbit T x p) (T (orbit T x p))     := by sorry
-        _ ≤ (∑ i ∈ Finset.range p, c^i) * M.dist x (T x) + M.dist (orbit T x p) (orbit T (T x) p)
-                                                                                := by sorry
-        _ ≤ (∑ i ∈ Finset.range p, c^i) * M.dist x (T x) + c^p * M.dist x (T x) := by sorry -- rw [h_funfact1 x (T x) p]
-        _ = ((∑ i ∈ Finset.range p, c^i) + c^p) * M.dist x (T x)                := by sorry
-        _ = (∑ i ∈ Finset.range (p+1), c^i) * M.dist x (T x)                    := by sorry
-    }
   have h5 (x: X) (n: Nat): M.dist x (orbit T x n) ≤ M.dist x (T x) / (1 - c) := by
     sorry
   let N: Nat := sorry -- should be greater than log_c(2 * ε * (1-c) / (M.dist x0 (T x0)))
   have h6: c^N / (1 - c) * M.dist x0 (T x0) < ε := sorry
   exists N
   intro m n ⟨N_leq_m, N_leq_n⟩
+  have c_pow_m_nonneg := pow_nonneg c_nonneg m
+  have c_pow_n_nonneg := pow_nonneg c_nonneg n
   by_cases h7: m ≤ n
   let d := n - m
   have h8: n = d + m := sorry
   rw [h8]
-  have c_pow_nonnneg: c^m ≥ 0 := sorry
   calc
     M.dist (orbit T x0 m) (orbit T x0 (d + m))
-      = M.dist (orbit T x0 m) (orbit T (orbit T x0 d) m)      := sorry
-    _ ≤ c^m * M.dist x0 (orbit T x0 d)                        := by apply h3
-    _ ≤ c^m * (∑ i in Finset.range d, c^i) * M.dist x0 (T x0) := sorry
-    _ ≤ c^m / (1 - c) * M.dist x0 (T x0)                      := sorry
-    _ ≤ c^N / (1 - c) * M.dist x0 (T x0)                      := sorry
-    _ < ε                                                     := h6
+      = M.dist (orbit T x0 m) (orbit T (orbit T x0 d) m)        := sorry
+    _ ≤ c^m * M.dist x0 (orbit T x0 d)                          := orbit_cauchy_lemma1 x0 (orbit T x0 d) m c c_nonneg contr_ineq
+    _ ≤ c^m * ((1 - c)⁻¹ * M.dist x0 (T x0)) := mul_le_mul_of_nonneg_left (orbit_cauchy_lemma3 x0 d c c_nonneg c_lt_one contr_ineq) c_pow_m_nonneg
+    _ ≤ c^N * ((1 - c)⁻¹ * M.dist x0 (T x0))                    := mul_le_mul_of_nonneg_right (pow_reverse c_nonneg c_lt_one N_leq_m) sorry
+    _ ≤ c^N * (1 - c)⁻¹ * M.dist x0 (T x0)                      := sorry
+    _ < ε                                                       := h6
 
   let d := m - n
   have h7: m = d + n := sorry
   rw [h7]
   calc
     M.dist (orbit T x0 (d + n)) (orbit T x0 n)
-      ≤ c^n * M.dist (orbit T x0 d) x0                        := by sorry
-    _ = c^n * M.dist x0 (orbit T x0 d)                        := by sorry
-    _ ≤ c^n * (∑ i in Finset.range d, c^i) * M.dist x0 (T x0) := by sorry
-    _ ≤ c^n / (1 - c) * M.dist x0 (T x0)                      := by sorry
-    _ ≤ c^N / (1 - c) * M.dist x0 (T x0)                      := by sorry
+      = M.dist (orbit T (orbit T x0 d) n) (orbit T x0 n)      := by sorry
+    _ ≤ c^n * M.dist (orbit T x0 d) x0                        := orbit_cauchy_lemma1 (orbit T x0 d) x0 n c c_nonneg contr_ineq
+    _ = c^n * M.dist x0 (orbit T x0 d)                        := by rw [M.dist_comm]
+    _ ≤ c^n * ((1 - c)⁻¹ * M.dist x0 (T x0))                  := mul_le_mul_of_nonneg_left (orbit_cauchy_lemma3 x0 d c c_nonneg c_lt_one contr_ineq) c_pow_n_nonneg
+    _ ≤ c^N * (1 - c)⁻¹ * M.dist x0 (T x0)                    := by sorry
     _ < ε                                                     := h6
 
-
-theorem contraction_mapping_theorem {M: MetricSpace X} (h0: Nonempty X) (h1: complete M) (h2: contraction M T): ∃! x: X, T x = x := by
+theorem contraction_mapping_theorem {X: Type} {M: MetricSpace X} {T: X → X} (h0: Nonempty X) (h1: complete M) (h2: contraction M T): ∃! x: X, T x = x := by
   -- assume X is nonempty, pick an arbitrary point
   let x0: X := Classical.choice h0
   -- define a sequence
@@ -237,9 +243,9 @@ theorem contraction_mapping_theorem {M: MetricSpace X} (h0: Nonempty X) (h1: com
   simp
   intro y_fixed_point
   apply eq_comm.mp
-  obtain ⟨c, ⟨c_geq_zero, c_lt_one, contraction_ineq⟩⟩ := h2
+  obtain ⟨c, ⟨c_geq_zero, c_lt_one, contr_ineq⟩⟩ := h2
   have x_y_dist_leq_c_mul_x_y_dist := calc
     M.dist x y = M.dist (T x) (T y) := by rw [x_fixed_point, y_fixed_point]
-               _ ≤ c * (M.dist x y) := by apply contraction_ineq
+               _ ≤ c * (M.dist x y) := by apply contr_ineq
   have x_y_dist_zero: M.dist x y = 0 := easy_lemma x_y_dist_leq_c_mul_x_y_dist dist_nonneg c_lt_one
   exact M.eq_of_dist_eq_zero x_y_dist_zero
