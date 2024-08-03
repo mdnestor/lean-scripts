@@ -79,6 +79,7 @@ theorem orbit_converge_to_fixed_point (h1: continuous M M f) (h2: converges M (o
 def contraction (M: MetricSpace X) (T: X → X): Prop :=
   ∃ c: Real, 0 ≤ c ∧ c < 1 ∧ ∀ x y: X, M.dist (T x) (T y) ≤ c * (M.dist x y)
 
+-- https://math.stackexchange.com/a/1800125
 theorem contraction_continuous (M: MetricSpace X) (T: X → X) (h: contraction M T): continuous M M T := by
   obtain ⟨c, ⟨h1, h2, h3⟩⟩ := h
   intro x ε h4
