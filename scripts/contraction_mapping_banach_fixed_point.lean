@@ -8,6 +8,7 @@ https://www.math.ucdavis.edu/~hunter/book/ch3.pdf
 import Mathlib.Data.Real.Basic
 import Mathlib.Tactic.Linarith
 import Mathlib.Algebra.BigOperators.Group.Finset
+import Mathlib.Tactic.Ring
 
 structure MetricSpace (X: Type) where
   dist: X → X → Real
@@ -122,31 +123,23 @@ theorem contraction_continuous (M: MetricSpace X) (T: X → X) (h: contraction M
                      _ < c * (ε / c)    := by apply (mul_lt_mul_left c_pos).mpr x_y_within_eps_div_c
                      _ = ε              := by rw [mul_div_cancel₀ ε c_case]
 
-def geometric_sum (c : ℝ) (n : ℕ) : ℝ :=
-  ∑ i in Finset.range n, c^i
-
-theorem easy_lemma {a b: Real} (h1: a ≤ b * a) (h2: a ≥ 0) (h3: b < 1): a = 0 := by
-  apply Classical.not_not.mp
-  apply Not.intro
-  intro a_neq_zero
-  have a_gt_zero := lt_of_le_of_ne h2 (ne_comm.mp a_neq_zero)
-  have a_div_a_leq_b := (div_le_iff a_gt_zero).mpr h1
-  rw [div_self a_neq_zero] at a_div_a_leq_b
-  have b_not_lt_one := not_lt.mpr a_div_a_leq_b
-  contradiction
-
 theorem geom_series_bound (c: Real) (n: Nat): 0 ≤ c → c < 1 → (∑ i in Finset.range n, c^i) ≤ 1 / (1 - c) := by
   sorry
 
+theorem pow_reverse {c: Real} {m n: Nat}: 0 ≤ c → c < 1 → m ≤ n → c^n ≤ c^m := by
+  sorry
+
+-- show orbit is cauchy. hard part!
 theorem orbit_cauchy {M: MetricSpace X} (h1: contraction M T): cauchy M (orbit T x0) := by
   intro ε ε_pos
   obtain ⟨c, ⟨c_nonneg, c_lt_one, contr_ineq⟩⟩ := h1
   by_cases h2: c = 0
   simp [h2] at contr_ineq
-  exists 0
-  intro m n ⟨N_leq_m, N_leq_n⟩
+  exists 1
+  intro m n ⟨one_leq_m, one_leq_n⟩
   calc
-    M.dist (orbit T x0 m) (orbit T x0 n) ≤ 0 := by sorry
+    M.dist (orbit T x0 m) (orbit T x0 n) = M.dist (T (orbit T x0 (m - 1))) (T (orbit T x0 (n - 1))) := by sorry
+                                       _ ≤ 0 := by apply contr_ineq
                                        _ < ε := ε_pos
   -- three important lemmas. would move them outside body but they depend on c
   have h3 (x y: X) (n: Nat): M.dist (orbit T x n) (orbit T y n) ≤ c^n * M.dist x y := by
@@ -158,10 +151,8 @@ theorem orbit_cauchy {M: MetricSpace X} (h1: contraction M T): cauchy M (orbit T
       rw [orbit, orbit]
       calc
         M.dist (T (orbit T x p)) (T (orbit T y p)) ≤ c * M.dist (orbit T x p) (orbit T y p) := by apply contr_ineq
-                                                 _ ≤ c * (c ^ p * M.dist x y)               := by sorry -- rw [h_induction]
-                                                 _ = (c * c^p) * M.dist x y                 := by rw [mul_assoc]
-                                                 _ = (c^p * c) * M.dist x y                 := by sorry
-                                                 _ = c^(p+1) * M.dist x y                   := by rw [pow_succ]
+                                                 _ ≤ c * (c^p * M.dist x y)               := mul_le_mul_of_nonneg_left h_induction c_nonneg
+                                                 _ = c^(p+1) * M.dist x y                   := by ring
     }
   have h4 (x: X) (n: Nat): M.dist x (orbit T x n) ≤ (∑ i in Finset.range n, c^i) * M.dist x (T x) := by
     induction n with
@@ -184,15 +175,17 @@ theorem orbit_cauchy {M: MetricSpace X} (h1: contraction M T): cauchy M (orbit T
   have h6: c^N / (1 - c) * M.dist x0 (T x0) < ε := sorry
   exists N
   intro m n ⟨N_leq_m, N_leq_n⟩
-  by_cases h4: m ≤ n
+  by_cases h7: m ≤ n
   let d := n - m
-  have h7: n = d + m := sorry
-  rw [h7]
+  have h8: n = d + m := sorry
+  rw [h8]
+  have c_pow_nonnneg: c^m ≥ 0 := sorry
   calc
-    M.dist (orbit T x0 m) (orbit T x0 (d + m)) ≤ c^m * M.dist x0 (orbit T x0 d)                        := by sorry
-                                             _ ≤ c^m * (∑ i in Finset.range d, c^i) * M.dist x0 (T x0) := by sorry
-                                             _ ≤ c^m / (1 - c) * M.dist x0 (T x0)                      := by sorry
-                                             _ ≤ c^N / (1 - c) * M.dist x0 (T x0)                      := by sorry
+    M.dist (orbit T x0 m) (orbit T x0 (d + m)) = M.dist (orbit T x0 m) (orbit T (orbit T x0 d) m) := by sorry
+                                             _ ≤ c^m * M.dist x0 (orbit T x0 d)                        := by apply h3
+                                             _ ≤ c^m * (∑ i in Finset.range d, c^i) * M.dist x0 (T x0) := sorry
+                                             _ ≤ c^m / (1 - c) * M.dist x0 (T x0)                      := sorry
+                                             _ ≤ c^N / (1 - c) * M.dist x0 (T x0)                      := sorry
                                              _ < ε                                                     := h6
 
   let d := m - n
@@ -206,13 +199,22 @@ theorem orbit_cauchy {M: MetricSpace X} (h1: contraction M T): cauchy M (orbit T
                                              _ ≤ c^N / (1 - c) * M.dist x0 (T x0)                      := by sorry
                                              _ < ε                                                     := h6
 
+theorem easy_lemma {a b: Real} (h1: a ≤ b * a) (h2: a ≥ 0) (h3: b < 1): a = 0 := by
+  apply Classical.not_not.mp
+  apply Not.intro
+  intro a_neq_zero
+  have a_gt_zero := lt_of_le_of_ne h2 (ne_comm.mp a_neq_zero)
+  have a_div_a_leq_b := (div_le_iff a_gt_zero).mpr h1
+  rw [div_self a_neq_zero] at a_div_a_leq_b
+  have b_not_lt_one := not_lt.mpr a_div_a_leq_b
+  contradiction
 
 theorem contraction_mapping_theorem {M: MetricSpace X} (h0: Nonempty X) (h1: complete M) (h2: contraction M T): ∃! x: X, T x = x := by
   -- assume X is nonempty, pick an arbitrary point
   let x0: X := Classical.choice h0
   -- define a sequence
   let a: Nat → X := orbit T x0
-  -- show it is cauchy (hard)
+  -- show it is cauchy
   have a_cauchy: cauchy M a := orbit_cauchy h2
   -- since the sequence is cauchy it has a limit
   obtain ⟨x, a_converges_to_x⟩ := h1 a a_cauchy
