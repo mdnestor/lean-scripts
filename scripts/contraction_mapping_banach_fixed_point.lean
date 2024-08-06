@@ -3,6 +3,8 @@ Contraction mapping theorem aka the Banach fixed point theorem
 
 Follows the proof given in Ch. 3 of Applied Analysis by Hunter and Nachtergaele
 https://www.math.ucdavis.edu/~hunter/book/ch3.pdf
+
+official mathlib proof is in https://github.com/leanprover-community/mathlib4/blob/master/Mathlib/Topology/MetricSpace/Contracting.lean
 -/
 
 import Mathlib.Data.Real.Basic
