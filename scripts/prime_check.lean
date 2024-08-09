@@ -1,27 +1,20 @@
-/-
-The naive way to check if a number n is prime is to check for divisors in the range 1,...,n.
-A wellknown speedup is to only check in the range 1,...,sqrt(n),
-since every divisor d which is greater than sqrt(n) corresponds to another divisor n/d which is less than sqrt(n).
-Can we implement both functions and prove they are equal on all inputs?
--/
+def prime (n: Nat): Prop :=
+  n > 1 ∧ ∀ d: Nat, n % d = 0 → d = 1 ∨ d = n
 
-def is_prime (n : Nat) : Bool :=
-  let divisors := List.range (n + 1)
-  let divisors := divisors.filter (fun m => n % m == 0)
-  divisors.length == 2
+def prime_check (n: Nat): Bool := by
+  let range := List.range (n + 1)
+  let divisors := List.filter (fun d => n % d = 0) range
+  let is_prime := decide (divisors.length = 2)
+  exact is_prime
 
-def is_prime_fast (n : Nat) : Bool :=
-  if n < 2 then
-    false
-  else
-    let floor_sqrt_n := USize.toNat (Float.toUSize (Float.sqrt (Nat.toFloat n)))
-    let divisors := List.range (floor_sqrt_n + 1)
-    let divisors := divisors.filter (fun m => n % m == 0)
-    divisors.length == 1
-
-example: ∀ n: Nat, is_prime n = is_prime_fast n := by
-  intro n
-  rw [is_prime, is_prime_fast]
-  simp
-  -- no clue xd
+example (n: Nat): prime n ↔ (prime_check n = true) := by
+  apply Iff.intro
+  intro h1
+  simp [prime_check]
+  sorry
+  intro h1
+  simp [prime_check] at h1
+  apply And.intro
+  sorry
+  intro d h2
   sorry
