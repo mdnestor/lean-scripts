@@ -6,6 +6,7 @@
 import Mathlib.CategoryTheory.Functor.Category
 import Mathlib.CategoryTheory.Functor.KanExtension.Basic
 import Mathlib.CategoryTheory.Equivalence
+import Mathlib.CategoryTheory.Functor.KanExtension.Adjunction
 
 open CategoryTheory
 
@@ -18,29 +19,11 @@ noncomputable def left_kan
   (f: Functor T T')
   (C: Type u3)
   [Category C]
-  -- [Limits.HasColimits C]
+  [Limits.HasColimits C]
   [∀ F: Functor T C, f.HasLeftKanExtension F]: -- should be automatically inferred since T is small and C is cocomplete
-  Functor (T ⥤ C) (T' ⥤ C) := {
-    obj := fun M => CategoryTheory.Functor.leftKanExtension f M
-    map := by
-      intro M M' η
-      simp
-      #check (CategoryTheory.Functor.leftKanExtension f M)
+  Functor (T ⥤ C) (T' ⥤ C) :=
+  Functor.lan f
 
-      -- F and F' are functors from T to C
-      -- a is a natural transformation from F to F'
-      #check f.leftKanExtension M
-      #check f.leftKanExtension M'
-
-      -- i need a natural transformation from
-      -- f.ext M: T' ⥤ C to f.ext M' : T' ⥤ C
-
-      sorry
-  }
--- I am trying to construct the functor from [T, C] to [T', C]. I know that it sends a functor M: T ⥤ C to Lan_f(M): T' ⥤ C
--- but what does it do to natural transformations? I have functors M and M' : T ⥤ C and a natural transformation η : M ⟶ M and I need to return a natural transformation Lan_f(M) ⟶ Lan_f(M')?
-
--- define the category of indexed sets
 class ISet where
   X: Type u
   A: X → Type v
@@ -89,6 +72,10 @@ def eqv_comp (T: Type u1) [Category T]: Functor (T ⥤ ISet) (T ⥤ (Arrow (Type
   map := fun η => whiskerRight η eqv.functor
 }
 
+instance: Limits.HasColimits ISet := sorry
+
+instance: Limits.HasColimits (Arrow (Type u3)) := sorry
+
 theorem main {T: Type u1} {T': Type u2}
   [Category T]
   [Category T']
@@ -98,5 +85,4 @@ theorem main {T: Type u1} {T': Type u2}
   IsIsomorphic
   ((left_kan f ISet) ⋙ (eqv_comp T'))
   ((eqv_comp T) ⋙ (left_kan f (Arrow (Type u3)))) := by
-  simp [left_kan]
-  aesop_cat
+  sorry
