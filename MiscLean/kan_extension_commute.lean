@@ -28,6 +28,16 @@ instance: Category ISet := {
   comp := ISetComp
 }
 
+-- ISet is cocomplete
+instance: Limits.HasColimits ISet := by
+  simp [Limits.HasColimits]
+  constructor
+  intro J _
+  constructor
+  intro F
+  -- given functor `F : J ⥤ ISet` show that `Limits.HasColimit F`
+  sorry
+
 -- equivalence between ISet and Arrow(Set)
 def eqv: CategoryTheory.Equivalence ISet (Arrow (Type u)) := sorry
 
@@ -37,8 +47,7 @@ def eqv_comp (T: Type u1) [Category T]: Functor (T ⥤ ISet) (T ⥤ (Arrow (Type
   map := fun η => whiskerRight η eqv.functor -- not 100% this is corect
 }
 
-instance: Limits.HasColimits ISet := sorry
-
+-- Arrow(Set) is cocomplete
 instance: Limits.HasColimits (Arrow (Type u)) := CategoryTheory.Arrow.hasColimits
 
 -- if f: T ⥤ T' is a functor between small categories and C is cocomplete then every functor F: T ⥤ C has a left kan extension along f
