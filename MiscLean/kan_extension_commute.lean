@@ -1,4 +1,3 @@
-
 import Mathlib.CategoryTheory.Functor.KanExtension.Adjunction
 
 open CategoryTheory
@@ -28,7 +27,7 @@ instance: Category ISet := {
   comp := ISetComp
 }
 
--- there is an equivalence between this category and the arrow category of Set
+-- equivalence between ISet and Arrow(Set)
 def eqv: CategoryTheory.Equivalence ISet (Arrow (Type u)) := sorry
 
 -- given category T lift to functor from [T, ISet] to [T, Arrow(Set)] via the equivalence
@@ -41,6 +40,7 @@ instance: Limits.HasColimits ISet := sorry
 
 instance: Limits.HasColimits (Arrow (Type u3)) := sorry
 
+-- if f: T ⥤ T' is a functor between small categories and C is cocomplete then every functor F: T ⥤ C has a left kan extension along f
 instance {T: Type u1} {T': Type u2} {C: Type u3} [SmallCategory T] [SmallCategory T'] [Category C] [Limits.HasColimits C] {f: Functor T T'}: ∀ F: Functor T C, f.HasLeftKanExtension F := sorry
 
 theorem main {T: Type u1} {T': Type u2} [SmallCategory T] [SmallCategory T'] (f: Functor T T'):
