@@ -1,3 +1,6 @@
+
+
+
 -- https://en.wikipedia.org/wiki/Arrow's_impossibility_theorem
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Set.Card
@@ -49,8 +52,8 @@ theorem nonempty_partition {X: Type} {S: Set X} (h: Set.encard S ≥ 2): ∃ S1 
 -- if a set has ≥3 elements there exist 3 distinct elements 
 theorem choose_3_distinct {X: Type} (h: PartENat.card X ≥ 3): ∃ x y z: X, x ≠ y ∧ y ≠ z ∧ z ≠ x := sorry
 
-lemma group_contraction {A V: Type} (F: (V → (A → A → Prop)) → (A → A → Prop)) (G: Set V) (x y: A) (h0: ∀ p: V → (A → A → Prop), (∀ v: V, preference (p v)) → preference (F p)) (h1: pareto F) (h2: indep_irrel F) (h3: PartENat.card A ≥ 3) (h4: Set.encard G ≥ 2) (h5: decisive F G):
-  ∃ G' ⊂ G, Nonempty G' ∧ decisive F G' := by
+theorem group_contraction {A V: Type} (F: (V → (A → A → Prop)) → (A → A → Prop)) (G: Set V) (h0: ∀ p: V → (A → A → Prop), (∀ v: V, preference (p v)) → preference (F p)) (h1: pareto F) (h2: indep_irrel F) (h3: PartENat.card A ≥ 3) (h4: Set.encard G ≥ 2) (h5: decisive F G):
+  ∃ T ⊂ G, T.Nonempty ∧ decisive F T := by
   obtain ⟨G1, G2, hGG, hG0, hG1, hG2⟩ := nonempty_partition h4
   obtain ⟨x, y, z, hxy, hyz, hzx⟩ := choose_3_distinct h3
 
@@ -95,13 +98,33 @@ lemma group_contraction {A V: Type} (F: (V → (A → A → Prop)) → (A → A 
 -- if a property holds true for a finite set
 -- and whenever it holds for true for a set of size ≥ b it holds true for a nonempty proper subset
 -- then it holds true for a nonempty subset of size <b
-theorem descent: True := sorry
+theorem descent
+  {X : Type} (P: Set X → Prop) (b : ℕ)
+  (h1 : ∀ S: Set X, P S ∧ b ≤ Set.encard S → ∃ T : Set X, T.Nonempty ∧ T ⊂ S ∧ P T)
+  (h2: ∃ S: Set X, Set.encard S < ⊤ ∧ P S):
+  ∃ S : Set X, S.Nonempty ∧ P S ∧ Set.encard S < b := by sorry
+
+theorem set_singleton {X: Type} {S: Set X} (h1: S.Nonempty) (h2: Set.encard S < 2):
+  ∃ x: X, S = {x} := sorry 
 
 theorem arrow_impossibility
-  (F: (V → (A → A → Prop)) → (A → A → Prop))
+  {V A: Type} (F: (V → (A → A → Prop)) → (A → A → Prop))
   (h0: ∀ p: V → (A → A → Prop), (∀ v: V, preference (p v)) → preference (F p))
   (h1: pareto F)
-  (h2: ¬∃ i: V, dictator F i)
-  (h3: indep_irrel F): False := by
-  apply h2
-  sorry
+  (h2: indep_irrel F)
+  (h3: PartENat.card A ≥ 3)
+  (h4: Finite A): ∃ i: V, dictator F i := by
+  have h5: ∀ S: Set V, decisive F S ∧ Set.encard S ≥ 2 → ∃ T: Set V, T.Nonempty ∧ T ⊂ S ∧ decisive F T := by
+    intro S ⟨hS1, hS2⟩ 
+    obtain ⟨T, hT1, hT2, hT3⟩ := group_contraction F S h0 h1 h2 h3 hS2 hS1
+    exists T
+  have h6: ∃ S: Set V, Set.encard S < ⊤ ∧ decisive F S := by
+    exists Set.univ
+    constructor
+    sorry -- A is finite
+    exact decisive_univ F h1
+  obtain ⟨U, hU1, hU2, hU3⟩ := descent (fun G: Set V => decisive F G) 2 h5 h6
+  obtain ⟨i, hi⟩ := set_singleton hU1 hU3
+  exists i
+  rw [dictator, ←hi]
+  exact hU2
