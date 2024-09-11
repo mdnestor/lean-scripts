@@ -1,3 +1,4 @@
+import Mathlib.CategoryTheory.Limits.Comma
 import Mathlib.CategoryTheory.Functor.KanExtension.Adjunction
 
 open CategoryTheory
@@ -38,7 +39,7 @@ def eqv_comp (T: Type u1) [Category T]: Functor (T ⥤ ISet) (T ⥤ (Arrow (Type
 
 instance: Limits.HasColimits ISet := sorry
 
-instance: Limits.HasColimits (Arrow (Type u3)) := sorry
+instance: Limits.HasColimits (Arrow (Type u)) := CategoryTheory.Arrow.hasColimits
 
 -- if f: T ⥤ T' is a functor between small categories and C is cocomplete then every functor F: T ⥤ C has a left kan extension along f
 instance {T: Type u1} {T': Type u2} {C: Type u3} [SmallCategory T] [SmallCategory T'] [Category C] [Limits.HasColimits C] {f: Functor T T'}: ∀ F: Functor T C, f.HasLeftKanExtension F := sorry
