@@ -1,32 +1,12 @@
 
--- given a functor f: T → T'
--- and a category C with all small colimits
--- there is a functor Lan_f(-) : [T, C] → [T, C']
-
-import Mathlib.CategoryTheory.Functor.Category
-import Mathlib.CategoryTheory.Functor.KanExtension.Basic
-import Mathlib.CategoryTheory.Equivalence
 import Mathlib.CategoryTheory.Functor.KanExtension.Adjunction
 
 open CategoryTheory
 
-universe u1 u2 u3
-
-noncomputable def left_kan
-  {T: Type u1} {T': Type u2}
-  [SmallCategory T]
-  [Category T']
-  (f: Functor T T')
-  (C: Type u3)
-  [Category C]
-  [Limits.HasColimits C]
-  [∀ F: Functor T C, f.HasLeftKanExtension F]: -- should be automatically inferred since T is small and C is cocomplete
-  Functor (T ⥤ C) (T' ⥤ C) :=
-  Functor.lan f
-
+-- category of indexed sets
 class ISet where
-  X: Type u
-  A: X → Type v
+  X: Type u1
+  A: X → Type u2
 
 class ISetHom (I1 I2: ISet) where
   f: I1.X → I2.X
@@ -48,26 +28,11 @@ instance: Category ISet := {
   comp := ISetComp
 }
 
--- there is an equivalence between this category
--- and the arrow category of Set
-def eqv: CategoryTheory.Equivalence ISet (Arrow (Type u3)) := {
-  functor := {
-    obj := fun I => {
-        left := sorry
-        right := sorry
-        hom := sorry
-      }
-    map := sorry
-  }
-  inverse := {
-    obj := sorry
-    map := sorry
-  }
-  unitIso := sorry
-  counitIso := sorry
-}
+-- there is an equivalence between this category and the arrow category of Set
+def eqv: CategoryTheory.Equivalence ISet (Arrow (Type u)) := sorry
 
-def eqv_comp (T: Type u1) [Category T]: Functor (T ⥤ ISet) (T ⥤ (Arrow (Type u3))) := {
+-- given category T lift to functor from [T, ISet] to [T, Arrow(Set)] via the equivalence
+def eqv_comp (T: Type u1) [Category T]: Functor (T ⥤ ISet) (T ⥤ (Arrow (Type u2))) := {
   obj := fun F => F ⋙ eqv.functor
   map := fun η => whiskerRight η eqv.functor
 }
@@ -76,13 +41,11 @@ instance: Limits.HasColimits ISet := sorry
 
 instance: Limits.HasColimits (Arrow (Type u3)) := sorry
 
-theorem main {T: Type u1} {T': Type u2}
-  [Category T]
-  [Category T']
+instance {T: Type u1} {C: Type u2} [SmallCategory T] [Category C] [Limits.HasColimits C] {f: Functor T C}: ∀ F: Functor T C, f.HasLeftKanExtension F := sorry
+
+theorem main {T: Type u1} {T': Type u2} [SmallCategory T] [SmallCategory T']
   (f: Functor T T')
   [∀ F: Functor T ISet, f.HasLeftKanExtension F]
-  [∀ F: Functor T (Arrow (Type u3)), f.HasLeftKanExtension F]:
-  IsIsomorphic
-  ((left_kan f ISet) ⋙ (eqv_comp T'))
-  ((eqv_comp T) ⋙ (left_kan f (Arrow (Type u3)))) := by
+  [∀ F: Functor T (Arrow (Type u3)), f.HasLeftKanExtension F]: -- these should be inferred since T is small and C is cocomplete
+  IsIsomorphic (Functor.lan f ⋙ eqv_comp T') (eqv_comp T ⋙ Functor.lan f) := by -- isomorphism in the functor category
   sorry
