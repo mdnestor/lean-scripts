@@ -48,4 +48,4 @@ theorem main {T: Type u1} {T': Type u2} [SmallCategory T] [SmallCategory T']
   [∀ F: Functor T ISet, f.HasLeftKanExtension F]
   [∀ F: Functor T (Arrow (Type u3)), f.HasLeftKanExtension F]: -- these should be inferred since T is small and C is cocomplete
   IsIsomorphic (Functor.lan f ⋙ eqv_comp T') (eqv_comp T ⋙ Functor.lan f)  -- isomorphism in the functor category
-  sorry
+  := by sorry
