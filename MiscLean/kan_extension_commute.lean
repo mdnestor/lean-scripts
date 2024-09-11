@@ -34,18 +34,15 @@ def eqv: CategoryTheory.Equivalence ISet (Arrow (Type u)) := sorry
 -- given category T lift to functor from [T, ISet] to [T, Arrow(Set)] via the equivalence
 def eqv_comp (T: Type u1) [Category T]: Functor (T ⥤ ISet) (T ⥤ (Arrow (Type u2))) := {
   obj := fun F => F ⋙ eqv.functor
-  map := fun η => whiskerRight η eqv.functor -- not 100% this is correct
+  map := fun η => whiskerRight η eqv.functor -- not 100% this is corect
 }
 
 instance: Limits.HasColimits ISet := sorry
 
 instance: Limits.HasColimits (Arrow (Type u3)) := sorry
 
-instance {T: Type u1} {C: Type u2} [SmallCategory T] [Category C] [Limits.HasColimits C] {f: Functor T C}: ∀ F: Functor T C, f.HasLeftKanExtension F := sorry
+instance {T: Type u1} {T': Type u2} {C: Type u3} [SmallCategory T] [SmallCategory T'] [Category C] [Limits.HasColimits C] {f: Functor T T'}: ∀ F: Functor T C, f.HasLeftKanExtension F := sorry
 
-theorem main {T: Type u1} {T': Type u2} [SmallCategory T] [SmallCategory T']
-  (f: Functor T T')
-  [∀ F: Functor T ISet, f.HasLeftKanExtension F]
-  [∀ F: Functor T (Arrow (Type u3)), f.HasLeftKanExtension F]: -- these should be inferred since T is small and C is cocomplete
-  IsIsomorphic (Functor.lan f ⋙ eqv_comp T') (eqv_comp T ⋙ Functor.lan f)  -- isomorphism in the functor category
+theorem main {T: Type u1} {T': Type u2} [SmallCategory T] [SmallCategory T'] (f: Functor T T'):
+  IsIsomorphic (Functor.lan f ⋙ eqv_comp T') (eqv_comp T ⋙ Functor.lan f) -- isomorphism in the functor category
   := by sorry
