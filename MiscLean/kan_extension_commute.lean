@@ -8,7 +8,7 @@ universe u v
 -- category of indexed sets
 class ISet where
   Base: Type u
-  Fiber: X → Type v
+  Fiber: Base → Type v
 
 class ISetHom (I1 I2: ISet) where
   basemap: I1.Base → I2.Base
