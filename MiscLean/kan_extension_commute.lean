@@ -3,12 +3,10 @@ import Mathlib.CategoryTheory.Functor.KanExtension.Adjunction
 
 open CategoryTheory
 
-universe u v
-
 -- category of indexed sets
 class ISet where
-  Base: Type u
-  Fiber: Base → Type v
+  Base: Type*
+  Fiber: Base → Type*
 
 class ISetHom (I1 I2: ISet) where
   basemap: I1.Base → I2.Base
@@ -53,7 +51,7 @@ def DPairMap {I1 I2: ISet} (f: ISetHom I1 I2): DPair I1 → DPair I2 :=
   }
 
 -- Grothendeick functor from ISet to Arrow(Set)
-def GrothFunc: Functor ISet (Arrow (Type u)) := {
+def GrothFunc: Functor ISet (Arrow Type*) := {
   obj := fun I: ISet => Arrow.mk (fun p: DPair I => p.x)
   map := fun f => {
     left := DPairMap f
@@ -61,22 +59,40 @@ def GrothFunc: Functor ISet (Arrow (Type u)) := {
   }
 }
 
+-- Psi functor from Arrow(Set) to ISet
+def Ψ: Functor (Arrow Type*) ISet := {
+  obj := fun f => {
+    Base := f.right
+    Fiber := fun b => ↑(Set.preimage f.hom {b})
+  }
+  map := fun {f g} h => {
+      basemap := h.right
+      fibermap := fun x a => ⟨Set.restrict (Set.preimage f.hom {x}) h.left a, by {simp; sorry}⟩ -- missing proof that g.hom (h.left ↑a) = h.right x
+  }
+}
+
 -- Equivalence between ISet and Arrow(Set)
-def eqv: CategoryTheory.Equivalence ISet (Arrow (Type u)) := {
+def eqv: CategoryTheory.Equivalence ISet (Arrow Type*) := {
   functor := GrothFunc
-  inverse := sorry
-  unitIso := sorry
-  counitIso := sorry
+  inverse := Ψ
+  unitIso := {
+    hom := sorry
+    inv := sorry
+  }
+  counitIso := {
+    hom := sorry
+    inv := sorry
+  }
 }
 
 -- given category T lift to functor from [T, ISet] to [T, Arrow(Set)] via the equivalence
-def eqv_comp (T: Type u1) [Category T]: Functor (T ⥤ ISet) (T ⥤ (Arrow (Type u2))) := {
+def eqv_comp (T: Type*) [Category T]: Functor (T ⥤ ISet) (T ⥤ Arrow Type*) := {
   obj := fun F => F ⋙ eqv.functor
   map := fun η => whiskerRight η eqv.functor -- not 100% this is corect
 }
 
 -- Arrow(Set) is cocomplete
-instance: Limits.HasColimits (Arrow (Type u)) := CategoryTheory.Arrow.hasColimits
+instance: Limits.HasColimits (Arrow Type*) := CategoryTheory.Arrow.hasColimits
 
 -- if f: T ⥤ T' is a functor between small categories and C is cocomplete then every functor F: T ⥤ C has a left kan extension along f
 instance {T T' C: Type*} [SmallCategory T] [SmallCategory T'] [Category C] [Limits.HasColimits C] {f: Functor T T'}: ∀ F: Functor T C, f.HasLeftKanExtension F := sorry
