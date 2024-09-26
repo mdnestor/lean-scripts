@@ -50,6 +50,10 @@ def DPairMap {I1 I2: ISet} (f: ISetHom I1 I2): DPair I1 → DPair I2 :=
     a := f.fibermap p.x p.a
   }
 
+-- for each I: ISet, the projection map proj_I sends the pair (x: I.Base, a: I.Fiber x) to x
+def proj (I: ISet): DPair I → I.Base :=
+  fun p => p.x
+
 -- Grothendeick functor from ISet to Arrow(Set)
 def GrothFunc: Functor ISet (Arrow Type*) := {
   obj := fun I: ISet => Arrow.mk (fun p: DPair I => p.x)
@@ -76,8 +80,16 @@ def eqv: CategoryTheory.Equivalence ISet (Arrow Type*) := {
   functor := GrothFunc
   inverse := Ψ
   unitIso := {
-    hom := sorry
-    inv := sorry
+    hom := {
+      app := by {
+        intro I
+        simp
+
+      }
+    }
+    inv := {
+      app := sorry
+    }
   }
   counitIso := {
     hom := sorry
